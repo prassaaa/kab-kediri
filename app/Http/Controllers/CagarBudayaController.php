@@ -15,19 +15,19 @@ class CagarBudayaController extends Controller
     public function index(Request $request)
     {
         $query = CagarBudaya::query();
-        
+    
         // Filter berdasarkan kategori
-        if ($request->has('kategori')) {
+        if ($request->filled('kategori')) {
             $query->where('kategori', $request->kategori);
         }
         
         // Filter berdasarkan status verifikasi
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('is_verified', $request->status === 'verified');
         }
         
         // Filter berdasarkan lokasi kecamatan
-        if ($request->has('kecamatan')) {
+        if ($request->filled('kecamatan')) {
             $query->where('lokasi_kecamatan', $request->kecamatan);
         }
         
@@ -35,9 +35,9 @@ class CagarBudayaController extends Controller
         if (Auth::user()->role === 'user') {
             $query->where('is_verified', true);
         }
-        
+    
         $cagarBudayas = $query->latest()->paginate(10);
-        
+    
         // Ambil daftar kecamatan untuk filter
         $kecamatans = CagarBudaya::select('lokasi_kecamatan')
             ->distinct()
