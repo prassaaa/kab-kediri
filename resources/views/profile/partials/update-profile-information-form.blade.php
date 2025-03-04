@@ -47,6 +47,23 @@
             @endif
         </div>
 
+        <!-- Display Role Information -->
+        <div>
+            <x-input-label for="role" :value="__('Role')" />
+            <div class="mt-1 p-2 bg-gray-100 rounded-md">
+                @if($user->role == 'superadmin')
+                    <span class="text-purple-700 font-semibold">Super Admin</span>
+                @elseif($user->role == 'admin')
+                    <span class="text-blue-700 font-semibold">Admin</span>
+                @else
+                    <span class="text-green-700 font-semibold">User</span>
+                @endif
+            </div>
+            <p class="mt-1 text-sm text-gray-600">
+                {{ __("Role tidak dapat diubah oleh pengguna.") }}
+            </p>
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
