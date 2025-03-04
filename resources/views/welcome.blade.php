@@ -15,6 +15,38 @@
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&amp;display=swap" rel="stylesheet" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <link href="{{ asset('assets/css/styles.css') }}" rel="stylesheet" />
+        <style>
+            .logo-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 30px;
+                margin-top: -100px;
+            }
+            .logo-item {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 0 15px;
+            }
+            
+            .logo-berbudaya img {
+                width: 75px;
+                height: 120px;
+                object-fit: contain;
+            }
+            .logo-ornamen img {
+                width: 110px;
+                height: 180px;
+                object-fit: contain;
+            }
+            .logo-kediri img {
+                width: 150px;
+                height: 180px;
+                object-fit: contain;
+                background-color: transparent;
+            }
+        </style>
     </head>
     <body>
         <!-- Background Video-->
@@ -23,6 +55,18 @@
         <div class="masthead">
             <div class="masthead-content text-white">
                 <div class="container-fluid px-4 px-lg-0">
+                    <div class="logo-row">
+                        <div class="logo-item logo-berbudaya">
+                            <img src="{{ asset('assets/img/kediri1.png') }}" alt="Kediri Berbudaya" />
+                        </div>
+                        <div class="logo-item logo-ornamen">
+                            <img src="{{ asset('assets/img/kediri2.png') }}" alt="Logo Cagar Budaya" />
+                        </div>
+                        <div class="logo-item logo-kediri">
+                            <img src="{{ asset('assets/img/kediri3.png') }}" alt="Lambang Disparbud" />
+                        </div>
+                    </div>
+                    
                     <h1 class="fst-italic lh-1 mb-4">Our Website is Coming Soon</h1>
                     <p class="mb-5">We're working hard to finish the development of this site. Sign up below to receive updates and to be notified when we launch!</p>
                     <form id="contactForm" data-sb-form-api-token="API_TOKEN">
@@ -51,8 +95,7 @@
         <!-- Social Icons-->
         <div class="social-icons">
             <div class="d-flex flex-row flex-lg-column justify-content-center align-items-center h-100 mt-3 mt-lg-0">
-                <a class="btn btn-dark m-3" href="#!"><i class="fa-brands fa-facebook"></i></i></a>
-                <a class="btn btn-dark m-3" href="#!"><i class="fab fa-instagram"></i></a>
+                <a class="btn btn-dark m-3" href="https://www.instagram.com/budayakediri/"><i class="fab fa-instagram"></i></a>
             </div>
         </div>
         <!-- Bootstrap core JS-->
