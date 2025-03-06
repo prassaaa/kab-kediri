@@ -157,7 +157,7 @@
                     </td>
                     <td style="width: 80%; text-align: center; border: none;">
                         <h1 style="margin: 0; font-size: 20px; text-transform: uppercase;">Dinas Pariwisata dan Kebudayaan</h1>
-                        <h2 style="margin: 5px 0; font-size: 16px;">Kabupaten Kediri</h2>
+                        <h1 style="margin: 5px 0; font-size: 20px; text-transform: uppercase;">Kabupaten Kediri</h1>
                         <p style="margin: 5px 0; font-size: 12px;">Alamat: Jalan Veteran No. 2, Kota Kediri, Jawa Timur</p>
                         <p style="margin: 5px 0; font-size: 12px;">Telepon: (0354) 123456 | Email: dinasparbudkediri@example.com</p>
                     </td>
