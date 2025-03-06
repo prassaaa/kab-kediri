@@ -104,36 +104,37 @@
     @endif
 </div>
 
-<!-- Tambahkan section untuk grafik -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-    <!-- Grafik predikat -->
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg p-6">
-        <h2 class="text-lg font-semibold mb-4">Perbandingan Predikat</h2>
-        <div style="position: relative; height:300px; width:100%">
-            <canvas id="predikatChart"></canvas>
-        </div>
-    </div>
-    
-    <!-- Grafik verifikasi -->
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg p-6">
-        <h2 class="text-lg font-semibold mb-4">Distribusi Berdasarkan Verifikasi</h2>
-        <div style="position: relative; height:300px; width:100%">
-            <canvas id="verifikasiChart"></canvas>
-        </div>
-    </div>
-</div>
-
-<!-- Grafik kategori dalam row terpisah -->
-<div class="mt-6">
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg p-6">
-        <h2 class="text-lg font-semibold mb-4">Distribusi Berdasarkan Kategori</h2>
-        <div style="position: relative; height:300px; width:100%">
-            <canvas id="kategoriChart"></canvas>
-        </div>
-    </div>
-</div>
-
+<!-- Bagian chart hanya untuk non-user -->
 @if (Auth::user()->role != 'user')
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        <!-- Grafik predikat -->
+        <div class="bg-white overflow-hidden shadow-sm rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-4">Perbandingan Predikat</h2>
+            <div style="position: relative; height:300px; width:100%">
+                <canvas id="predikatChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Grafik verifikasi -->
+        <div class="bg-white overflow-hidden shadow-sm rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-4">Distribusi Berdasarkan Verifikasi</h2>
+            <div style="position: relative; height:300px; width:100%">
+                <canvas id="verifikasiChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafik kategori -->
+    <div class="mt-6">
+        <div class="bg-white overflow-hidden shadow-sm rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-4">Distribusi Berdasarkan Kategori</h2>
+            <div style="position: relative; height:300px; width:100%">
+                <canvas id="kategoriChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Peta -->
     <div class="mt-8 bg-white overflow-hidden shadow-sm rounded-lg p-6">
         <h2 class="text-lg font-semibold mb-4">Peta Lokasi Cagar Budaya</h2>
         <div id="map" class="w-full h-96 rounded-lg border border-gray-300"></div>
@@ -142,118 +143,118 @@
 @endsection
 
 @push('scripts')
-<!-- Tambahkan Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@if (Auth::user()->role != 'user')
+    <!-- Tambahkan Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Data untuk grafik
-        const predikatData = {
-            labels: ['Cagar Budaya', 'Objek diduga cagar budaya'],
-            datasets: [{
-                data: [{{ $data['cagar_budaya_count'] ?? 0 }}, {{ $data['objek_diduga_count'] ?? 0 }}],
-                backgroundColor: ['rgba(52, 152, 219, 0.7)', 'rgba(243, 156, 18, 0.7)'],
-                borderColor: ['rgba(52, 152, 219, 1)', 'rgba(243, 156, 18, 1)'],
-                borderWidth: 1
-            }]
-        };
-        
-        const verifikasiData = {
-            labels: ['Terverifikasi', 'Belum Terverifikasi'],
-            datasets: [{
-                data: [{{ $data['verified_cagar_budaya'] ?? 0 }}, {{ $data['unverified_cagar_budaya'] ?? 0 }}],
-                backgroundColor: ['rgba(46, 204, 113, 0.7)', 'rgba(231, 76, 60, 0.7)'],
-                borderColor: ['rgba(46, 204, 113, 1)', 'rgba(231, 76, 60, 1)'],
-                borderWidth: 1
-            }]
-        };
-        
-        const kategoriData = {
-            labels: ['Benda', 'Bangunan', 'Struktur', 'Situs', 'Kawasan'],
-            datasets: [{
-                label: 'Jumlah',
-                data: [
-                    {{ $data['kategori_distribution']['Benda'] ?? 0 }}, 
-                    {{ $data['kategori_distribution']['Bangunan'] ?? 0 }}, 
-                    {{ $data['kategori_distribution']['Struktur'] ?? 0 }}, 
-                    {{ $data['kategori_distribution']['Situs'] ?? 0 }}, 
-                    {{ $data['kategori_distribution']['Kawasan'] ?? 0 }}
-                ],
-                backgroundColor: [
-                    'rgba(52, 152, 219, 0.7)',
-                    'rgba(155, 89, 182, 0.7)',
-                    'rgba(46, 204, 113, 0.7)',
-                    'rgba(241, 196, 15, 0.7)',
-                    'rgba(231, 76, 60, 0.7)'
-                ],
-                borderWidth: 1
-            }]
-        };
-        
-        // Opsi umum untuk grafik pie/doughnut
-        const pieOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
-                            const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                            return `${label}: ${value} (${percentage}%)`;
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Data untuk grafik
+            const predikatData = {
+                labels: ['Cagar Budaya', 'Objek diduga cagar budaya'],
+                datasets: [{
+                    data: [{{ $data['cagar_budaya_count'] ?? 0 }}, {{ $data['objek_diduga_count'] ?? 0 }}],
+                    backgroundColor: ['rgba(52, 152, 219, 0.7)', 'rgba(243, 156, 18, 0.7)'],
+                    borderColor: ['rgba(52, 152, 219, 1)', 'rgba(243, 156, 18, 1)'],
+                    borderWidth: 1
+                }]
+            };
+            
+            const verifikasiData = {
+                labels: ['Terverifikasi', 'Belum Terverifikasi'],
+                datasets: [{
+                    data: [{{ $data['verified_cagar_budaya'] ?? 0 }}, {{ $data['unverified_cagar_budaya'] ?? 0 }}],
+                    backgroundColor: ['rgba(46, 204, 113, 0.7)', 'rgba(231, 76, 60, 0.7)'],
+                    borderColor: ['rgba(46, 204, 113, 1)', 'rgba(231, 76, 60, 1)'],
+                    borderWidth: 1
+                }]
+            };
+            
+            const kategoriData = {
+                labels: ['Benda', 'Bangunan', 'Struktur', 'Situs', 'Kawasan'],
+                datasets: [{
+                    label: 'Jumlah',
+                    data: [
+                        {{ $data['kategori_distribution']['Benda'] ?? 0 }}, 
+                        {{ $data['kategori_distribution']['Bangunan'] ?? 0 }}, 
+                        {{ $data['kategori_distribution']['Struktur'] ?? 0 }}, 
+                        {{ $data['kategori_distribution']['Situs'] ?? 0 }}, 
+                        {{ $data['kategori_distribution']['Kawasan'] ?? 0 }}
+                    ],
+                    backgroundColor: [
+                        'rgba(52, 152, 219, 0.7)',
+                        'rgba(155, 89, 182, 0.7)',
+                        'rgba(46, 204, 113, 0.7)',
+                        'rgba(241, 196, 15, 0.7)',
+                        'rgba(231, 76, 60, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            
+            // Opsi umum untuk grafik pie/doughnut
+            const pieOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
                         }
                     }
                 }
-            }
-        };
-        
-        // Opsi untuk grafik bar
-        const barOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
+            };
+            
+            // Opsi untuk grafik bar
+            const barOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
                     }
                 }
-            }
-        };
-        
-        // Buat grafik
-        new Chart(document.getElementById('predikatChart'), {
-            type: 'doughnut',
-            data: predikatData,
-            options: pieOptions
+            };
+            
+            // Buat grafik
+            new Chart(document.getElementById('predikatChart'), {
+                type: 'doughnut',
+                data: predikatData,
+                options: pieOptions
+            });
+            
+            new Chart(document.getElementById('verifikasiChart'), {
+                type: 'doughnut',
+                data: verifikasiData,
+                options: pieOptions
+            });
+            
+            new Chart(document.getElementById('kategoriChart'), {
+                type: 'bar',
+                data: kategoriData,
+                options: barOptions
+            });
         });
-        
-        new Chart(document.getElementById('verifikasiChart'), {
-            type: 'doughnut',
-            data: verifikasiData,
-            options: pieOptions
-        });
-        
-        new Chart(document.getElementById('kategoriChart'), {
-            type: 'bar',
-            data: kategoriData,
-            options: barOptions
-        });
-    });
-</script>
+    </script>
 
-@if (Auth::user()->role != 'user')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             let map = L.map('map').setView([-7.8031, 111.9914], 10); // Koordinat Kabupaten Kediri
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
             
             fetch('/api/cagar-budaya-coordinates')
