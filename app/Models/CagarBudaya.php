@@ -11,6 +11,7 @@ class CagarBudaya extends Model
 
     protected $fillable = [
         'objek_cagar_budaya',
+        'predikat',
         'kategori',
         'no_reg_bpk_lama',
         'no_reg_bpk_baru',

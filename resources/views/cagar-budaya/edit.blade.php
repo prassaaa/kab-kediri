@@ -30,6 +30,18 @@
                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <div class="mb-4">
+                            <label for="predikat" class="block text-sm font-medium text-gray-700 mb-1">Predikat</label>
+                            <select name="predikat" id="predikat" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
+                                <option value="">Pilih Predikat</option>
+                                <option value="Cagar Budaya" {{ old('predikat', $cagarBudaya->predikat) == 'Cagar Budaya' ? 'selected' : '' }}>Cagar Budaya</option>
+                                <option value="Objek diduga cagar budaya" {{ old('predikat', $cagarBudaya->predikat) == 'Objek diduga cagar budaya' ? 'selected' : '' }}>Objek diduga cagar budaya</option>
+                            </select>
+                            @error('predikat')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
                         
                         <div class="mb-4">
                             <label for="kategori" class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>

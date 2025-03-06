@@ -63,6 +63,9 @@
                                 Objek Cagar Budaya
                             </th>
                             <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Predikat
+                            </th>
+                            <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 Kategori
                             </th>
                             <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -83,6 +86,14 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap border-b border-gray-300">
                                     {{ $cagarBudaya->objek_cagar_budaya }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap border-b border-gray-300">
+                                    <span class="px-2 py-1 text-xs rounded-full 
+                                        @if ($cagarBudaya->predikat == 'Cagar Budaya') bg-green-100 text-green-800
+                                        @else bg-orange-100 text-orange-800
+                                        @endif">
+                                        {{ $cagarBudaya->predikat }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap border-b border-gray-300">
                                     <span class="px-2 py-1 text-xs rounded-full 

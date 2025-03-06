@@ -69,6 +69,15 @@
                             <span>{{ $cagarBudaya->objek_cagar_budaya }}</span>
                         </div>
                         <div class="mb-3">
+                            <span class="font-semibold">Predikat:</span>
+                            <span class="px-2 py-1 text-xs rounded-full 
+                                @if ($cagarBudaya->predikat == 'Cagar Budaya') bg-green-100 text-green-800
+                                @else bg-orange-100 text-orange-800
+                                @endif">
+                                {{ $cagarBudaya->predikat }}
+                            </span>
+                        </div>                
+                        <div class="mb-3">
                             <span class="font-semibold">Kategori:</span>
                             <span class="px-2 py-1 text-xs rounded-full 
                                 @if ($cagarBudaya->kategori == 'Benda') bg-blue-100 text-blue-800

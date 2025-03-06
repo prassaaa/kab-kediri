@@ -61,6 +61,7 @@ class CagarBudayaController extends Controller
     {
         $validated = $request->validate([
             'objek_cagar_budaya' => 'required|string|max:255',
+            'predikat' => 'required|in:Cagar Budaya,Objek diduga cagar budaya',
             'kategori' => 'required|in:Benda,Bangunan,Struktur,Situs,Kawasan',
             'no_reg_bpk_lama' => 'nullable|string|max:255',
             'no_reg_bpk_baru' => 'nullable|string|max:255',
@@ -142,6 +143,7 @@ class CagarBudayaController extends Controller
         
         $validated = $request->validate([
             'objek_cagar_budaya' => 'required|string|max:255',
+            'predikat' => 'required|in:Cagar Budaya,Objek diduga cagar budaya',
             'kategori' => 'required|in:Benda,Bangunan,Struktur,Situs,Kawasan',
             'no_reg_bpk_lama' => 'nullable|string|max:255',
             'no_reg_bpk_baru' => 'nullable|string|max:255',
