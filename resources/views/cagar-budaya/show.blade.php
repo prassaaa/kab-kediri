@@ -4,22 +4,27 @@
 
 @section('content')
 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
-    <div class="p-4 sm:p-6">
-        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-            <a href="{{ route('cagar-budaya.index') }}" 
-               class="text-blue-600 hover:text-blue-900 flex items-center text-sm sm:text-base">
-                <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <div class="p-6">
+        <div class="mb-6 flex justify-between items-center">
+            <a href="{{ route('cagar-budaya.index') }}" class="text-blue-600 hover:text-blue-900 flex items-center">
+                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
                 Kembali ke Daftar
             </a>
             
-            @if (Auth::user()->role != 'user')
-                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+            <div class="flex space-x-2">
+                <a href="{{ route('cagar-budaya.export.detail', $cagarBudaya) }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                    </svg>
+                    Export PDF
+                </a>
+                
+                @if (Auth::user()->role != 'user')
                     @if ((Auth::user()->role == 'admin' && !$cagarBudaya->is_verified) || Auth::user()->role == 'superadmin')
-                        <a href="{{ route('cagar-budaya.edit', $cagarBudaya->id) }}" 
-                           class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded flex items-center text-sm sm:text-base w-full sm:w-36 justify-center">
-                            <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <a href="{{ route('cagar-budaya.edit', $cagarBudaya) }}" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                             </svg>
                             Edit Data
@@ -28,13 +33,11 @@
                     
                     @if (Auth::user()->role == 'superadmin')
                         @if (!$cagarBudaya->is_verified)
-                            <form action="{{ route('cagar-budaya.verify', $cagarBudaya->id) }}" method="POST">
+                            <form action="{{ route('cagar-budaya.verify', $cagarBudaya) }}" method="POST">
                                 @csrf
                                 @method('PUT')
-                                <button type="submit" 
-                                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center text-sm sm:text-base w-full sm:w-36 justify-center" 
-                                        onclick="return confirm('Yakin ingin memverifikasi data ini?')">
-                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center" onclick="return confirm('Yakin ingin memverifikasi data ini?')">
+                                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                     </svg>
                                     Verifikasi Data
@@ -42,27 +45,25 @@
                             </form>
                         @endif
                         
-                        <form action="{{ route('cagar-budaya.destroy', $cagarBudaya->id) }}" method="POST">
+                        <form action="{{ route('cagar-budaya.destroy', $cagarBudaya) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" 
-                                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center text-sm sm:text-base w-full sm:w-36 justify-center" 
-                                    onclick="return confirm('Yakin ingin menghapus data ini?')">
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center" onclick="return confirm('Yakin ingin menghapus data ini?')">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                                 Hapus Data
                             </button>
                         </form>
                     @endif
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <div class="space-y-6">
-                <div>
-                    <h3 class="text-lg font-semibold mb-2 text-center sm:text-left">Informasi Umum</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Informasi Umum</h3>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <div class="mb-3">
                             <span class="font-semibold">Objek Cagar Budaya:</span>
@@ -76,7 +77,7 @@
                                 @endif">
                                 {{ $cagarBudaya->predikat }}
                             </span>
-                        </div>                
+                        </div>
                         <div class="mb-3">
                             <span class="font-semibold">Kategori:</span>
                             <span class="px-2 py-1 text-xs rounded-full 
@@ -108,8 +109,8 @@
                     </div>
                 </div>
                 
-                <div>
-                    <h3 class="text-lg font-semibold mb-2 text-center sm:text-left">Lokasi</h3>
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Lokasi</h3>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <div class="mb-3">
                             <span class="font-semibold">Jalan/Dukuhan:</span>
@@ -133,14 +134,14 @@
                                 <span>{{ $cagarBudaya->latitude }}, {{ $cagarBudaya->longitude }}</span>
                             </div>
                             <div class="mt-4">
-                                <div id="map" class="h-48 sm:h-64 rounded-lg border border-gray-300"></div>
+                                <div id="map" class="h-64 rounded-lg border border-gray-300"></div>
                             </div>
                         @endif
                     </div>
                 </div>
                 
-                <div>
-                    <h3 class="text-lg font-semibold mb-2 text-center sm:text-left">Nomor Registrasi</h3>
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Nomor Registrasi</h3>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <div class="mb-3">
                             <span class="font-semibold">No. Reg BPK Lama:</span>
@@ -164,14 +165,12 @@
                 </div>
             </div>
             
-            <div class="space-y-6">
-                <div>
-                    <h3 class="text-lg font-semibold mb-2 text-center sm:text-left">Gambar</h3>
+            <div>
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Gambar</h3>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         @if ($cagarBudaya->gambar)
-                            <img src="{{ Storage::url($cagarBudaya->gambar) }}" 
-                                 alt="{{ $cagarBudaya->objek_cagar_budaya }}" 
-                                 class="w-full h-auto rounded-lg">
+                            <img src="{{ Storage::url($cagarBudaya->gambar) }}" alt="{{ $cagarBudaya->objek_cagar_budaya }}" class="w-full h-auto rounded-lg">
                         @else
                             <div class="text-center p-6 bg-gray-100 rounded-lg">
                                 <p>Tidak ada gambar</p>
@@ -180,23 +179,23 @@
                     </div>
                 </div>
                 
-                <div>
-                    <h3 class="text-lg font-semibold mb-2 text-center sm:text-left">Deskripsi</h3>
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Deskripsi</h3>
                     <div class="bg-gray-50 p-4 rounded-lg">
-                        <p class="whitespace-pre-line text-sm sm:text-base">{{ $cagarBudaya->deskripsi_singkat }}</p>
+                        <p class="whitespace-pre-line">{{ $cagarBudaya->deskripsi_singkat }}</p>
                     </div>
                 </div>
                 
-                <div>
-                    <h3 class="text-lg font-semibold mb-2 text-center sm:text-left">Kondisi Saat Ini</h3>
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-2">Kondisi Saat Ini</h3>
                     <div class="bg-gray-50 p-4 rounded-lg">
-                        <p class="whitespace-pre-line text-sm sm:text-base">{{ $cagarBudaya->kondisi_saat_ini ?: 'Tidak ada data' }}</p>
+                        <p class="whitespace-pre-line">{{ $cagarBudaya->kondisi_saat_ini ?: 'Tidak ada data' }}</p>
                     </div>
                 </div>
                 
                 @if (Auth::user()->role != 'user')
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2 text-center sm:text-left">Informasi Tambahan</h3>
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-2">Informasi Tambahan</h3>
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <div class="mb-3">
                                 <span class="font-semibold">Dibuat oleh:</span>
@@ -227,7 +226,7 @@
             let map = L.map('map').setView([{{ $cagarBudaya->latitude }}, {{ $cagarBudaya->longitude }}], 15);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
             
             L.marker([{{ $cagarBudaya->latitude }}, {{ $cagarBudaya->longitude }}])

@@ -6,6 +6,8 @@ use App\Models\CagarBudaya;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\PDF;
+use Illuminate\Support\Str;
 
 class CagarBudayaController extends Controller
 {
@@ -220,4 +222,50 @@ class CagarBudayaController extends Controller
         return redirect()->route('cagar-budaya.show', $cagarBudaya)
             ->with('success', 'Data cagar budaya berhasil diverifikasi.');
     }
+
+    public function exportByKecamatan(Request $request)
+{
+    $kecamatan = $request->kecamatan;
+    
+    $query = CagarBudaya::query();
+    
+    // Jika ada filter kecamatan
+    if ($kecamatan) {
+        $query->where('lokasi_kecamatan', $kecamatan);
+    }
+    
+    // Filter verifikasi jika user adalah user biasa
+    if (Auth::user()->role === 'user') {
+        $query->where('is_verified', true);
+    }
+    
+    $cagarBudayas = $query->get();
+    
+    // Create PDF
+    $pdf = PDF::loadView('cagar-budaya.pdf.kecamatan', [
+        'cagarBudayas' => $cagarBudayas,
+        'kecamatan' => $kecamatan ?: 'Semua Kecamatan',
+        'tanggal' => now()->format('d-m-Y')
+    ]);
+    
+    return $pdf->stream('cagar-budaya-' . (Str::slug($kecamatan ?: 'semua-kecamatan')) . '.pdf');
+}
+
+// Method untuk export PDF per objek
+public function exportById(CagarBudaya $cagarBudaya)
+{
+    // Check if user is allowed to see this
+    if (Auth::user()->role === 'user' && !$cagarBudaya->is_verified) {
+        abort(403, 'Data belum diverifikasi.');
+    }
+    
+    // Create PDF
+    $pdf = app('dompdf.wrapper');
+    $pdf->loadView('cagar-budaya.pdf.detail', [
+        'cagarBudaya' => $cagarBudaya,  // Pastikan ini benar
+        'tanggal' => now()->format('d-m-Y')
+    ]);
+    
+    return $pdf->stream('cagar-budaya-' . \Illuminate\Support\Str::slug($cagarBudaya->objek_cagar_budaya) . '.pdf');
+}
 }

@@ -18,8 +18,8 @@
                 <div></div>
             @endif
             
-            <div class="flex flex-col sm:flex-row w-full sm:w-auto">
-                <form action="{{ route('cagar-budaya.index') }}" method="GET" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center w-full sm:w-auto space-y-4 sm:space-y-0">
+                <form action="{{ route('cagar-budaya.index') }}" method="GET" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:mr-4">
                     <select name="kategori" class="rounded-md border-gray-300 shadow-sm text-sm sm:text-base">
                         <option value="">Semua Kategori</option>
                         <option value="Benda" {{ request('kategori') == 'Benda' ? 'selected' : '' }}>Benda</option>
@@ -50,6 +50,25 @@
                         Filter
                     </button>
                 </form>
+
+                <!-- Tambahan Tombol Export PDF -->
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center text-sm sm:text-base">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Export PDF
+                    </button>
+                    
+                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
+                        <form action="{{ route('cagar-budaya.export.kecamatan') }}" method="GET">
+                            <input type="hidden" name="kecamatan" value="{{ request('kecamatan') }}">
+                            <button type="submit" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
+                                {{ request('kecamatan') ? 'Export PDF Kecamatan ' . request('kecamatan') : 'Export PDF Semua Kecamatan' }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
         

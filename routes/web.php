@@ -29,6 +29,10 @@ Route::middleware('auth')->group(function () {
     
     // Route untuk admin dan superadmin
     Route::middleware('role:admin,superadmin')->group(function () {
+        // Route untuk export PDF per kecamatan
+        Route::get('/cagar-budaya/export/kecamatan', [CagarBudayaController::class, 'exportByKecamatan'])->name('cagar-budaya.export.kecamatan');
+        // Route untuk export PDF per objek
+        Route::get('/cagar-budaya/{cagarBudaya}/export', [CagarBudayaController::class, 'exportById'])->name('cagar-budaya.export.detail');
         Route::get('/cagar-budaya/create', [CagarBudayaController::class, 'create'])->name('cagar-budaya.create');
         Route::post('/cagar-budaya', [CagarBudayaController::class, 'store'])->name('cagar-budaya.store');
         Route::get('/cagar-budaya/{cagarBudaya}/edit', [CagarBudayaController::class, 'edit'])->name('cagar-budaya.edit');
