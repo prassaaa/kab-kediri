@@ -6,20 +6,33 @@
 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
     <div class="p-4 sm:p-6">
         <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-            @if (Auth::user()->role != 'user')
-                <a href="{{ route('cagar-budaya.create') }}" 
-                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center text-sm sm:text-base">
-                    <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    Tambah Data Cagar Budaya
-                </a>
-            @else
-                <div></div>
-            @endif
+            <div class="flex flex-col space-y-2 w-full sm:w-auto">
+                @if (Auth::user()->role != 'user')
+                    <a href="{{ route('cagar-budaya.create') }}" 
+                       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center text-sm sm:text-base">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Tambah Data Cagar Budaya
+                    </a>
+                @endif
+                
+                @if (Auth::user()->role == 'superadmin')
+                <form action="{{ route('cagar-budaya.export.kecamatan') }}" method="GET" class="w-full sm:w-auto">
+                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center text-sm sm:text-base">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Export PDF
+                    </button>
+                    <input type="hidden" name="kecamatan" value="{{ request('kecamatan') }}">
+                </form>
+                @endif
+            </div>
             
-            <div class="flex flex-col sm:flex-row items-start sm:items-center w-full sm:w-auto space-y-4 sm:space-y-0">
-                <form action="{{ route('cagar-budaya.index') }}" method="GET" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:mr-4">
+            <div class="flex flex-col w-full sm:w-auto space-y-4">
+                <!-- Form Filter -->
+                <form action="{{ route('cagar-budaya.index') }}" method="GET" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full">
                     <select name="kategori" class="rounded-md border-gray-300 shadow-sm text-sm sm:text-base">
                         <option value="">Semua Kategori</option>
                         <option value="Benda" {{ request('kategori') == 'Benda' ? 'selected' : '' }}>Benda</option>
@@ -51,24 +64,22 @@
                     </button>
                 </form>
 
-                <!-- Tambahan Tombol Export PDF -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center text-sm sm:text-base">
-                        <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                        </svg>
-                        Export PDF
-                    </button>
-                    
-                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
-                        <form action="{{ route('cagar-budaya.export.kecamatan') }}" method="GET">
-                            <input type="hidden" name="kecamatan" value="{{ request('kecamatan') }}">
-                            <button type="submit" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">
-                                {{ request('kecamatan') ? 'Export PDF Kecamatan ' . request('kecamatan') : 'Export PDF Semua Kecamatan' }}
-                            </button>
-                        </form>
+                <!-- Form Pencarian -->
+                <form action="{{ route('cagar-budaya.index') }}" method="GET" class="w-full sm:w-auto">
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </span>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari objek cagar budaya..." 
+                               class="rounded-md border-gray-300 shadow-sm text-sm sm:text-base pl-10 pr-3 py-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
                     </div>
-                </div>
+                    <!-- Menyimpan filter lain -->
+                    <input type="hidden" name="kategori" value="{{ request('kategori') }}">
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                    <input type="hidden" name="kecamatan" value="{{ request('kecamatan') }}">
+                </form>
             </div>
         </div>
         

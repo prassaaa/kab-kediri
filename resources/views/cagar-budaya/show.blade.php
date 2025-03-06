@@ -13,6 +13,7 @@
                 Kembali ke Daftar
             </a>
             
+            @if (Auth::user()->role == 'superadmin')
             <div class="flex space-x-2">
                 <a href="{{ route('cagar-budaya.export.detail', $cagarBudaya) }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -20,6 +21,7 @@
                     </svg>
                     Export PDF
                 </a>
+                @endif
                 
                 @if (Auth::user()->role != 'user')
                     @if ((Auth::user()->role == 'admin' && !$cagarBudaya->is_verified) || Auth::user()->role == 'superadmin')

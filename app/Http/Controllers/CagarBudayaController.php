@@ -17,6 +17,11 @@ class CagarBudayaController extends Controller
     public function index(Request $request)
     {
         $query = CagarBudaya::query();
+
+        // Filter berdasarkan pencarian
+        if ($search = $request->input('search')) {
+            $query->where('objek_cagar_budaya', 'like', '%' . $search . '%');
+        }
     
         // Filter berdasarkan kategori
         if ($request->filled('kategori')) {
