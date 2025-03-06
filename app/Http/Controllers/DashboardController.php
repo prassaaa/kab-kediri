@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\CagarBudaya;
 use App\Models\User;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -14,6 +14,19 @@ class DashboardController extends Controller
             'total_cagar_budaya' => CagarBudaya::count(),
             'verified_cagar_budaya' => CagarBudaya::where('is_verified', true)->count(),
             'unverified_cagar_budaya' => CagarBudaya::where('is_verified', false)->count(),
+            
+            // Tambahkan perhitungan berdasarkan predikat
+            'cagar_budaya_count' => CagarBudaya::where('predikat', 'Cagar Budaya')->count(),
+            'objek_diduga_count' => CagarBudaya::where('predikat', 'Objek diduga cagar budaya')->count(),
+            
+            // Tambahkan distribusi kategori
+            'kategori_distribution' => [
+                'Benda' => CagarBudaya::where('kategori', 'Benda')->count(),
+                'Bangunan' => CagarBudaya::where('kategori', 'Bangunan')->count(),
+                'Struktur' => CagarBudaya::where('kategori', 'Struktur')->count(),
+                'Situs' => CagarBudaya::where('kategori', 'Situs')->count(),
+                'Kawasan' => CagarBudaya::where('kategori', 'Kawasan')->count(),
+            ]
         ];
         
         // Jika superadmin, tambahkan data admin dan user
@@ -24,15 +37,15 @@ class DashboardController extends Controller
         
         return view('dashboard', compact('data'));
     }
-
+    
     public function notifikasi()
-{
-    // Implementasi notifikasi (untuk tahap awal, kita bisa menampilkan data cagar budaya yang belum diverifikasi)
-    $unverified = CagarBudaya::where('is_verified', false)
-        ->with('creator')
-        ->orderBy('created_at', 'desc')
-        ->get();
-        
-    return view('notifikasi.index', compact('unverified')); // Perhatikan perubahan di sini
-}
+    {
+        // Implementasi notifikasi (untuk tahap awal, kita bisa menampilkan data cagar budaya yang belum diverifikasi)
+        $unverified = CagarBudaya::where('is_verified', false)
+            ->with('creator')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        return view('notifikasi.index', compact('unverified'));
+    }
 }

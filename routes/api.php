@@ -13,7 +13,7 @@ Route::get('/cagar-budaya-coordinates', function () {
     $cagarBudayas = CagarBudaya::where('is_verified', true)
         ->whereNotNull('latitude')
         ->whereNotNull('longitude')
-        ->select('id', 'objek_cagar_budaya', 'kategori', 'latitude', 'longitude')
+        ->select('id', 'objek_cagar_budaya', 'predikat', 'kategori', 'latitude', 'longitude')
         ->get();
     
     return response()->json($cagarBudayas);
