@@ -137,7 +137,7 @@
     <!-- Peta -->
     <div class="mt-8 bg-white overflow-hidden shadow-sm rounded-lg p-6">
         <h2 class="text-lg font-semibold mb-4">Peta Lokasi Cagar Budaya</h2>
-        <div id="map" class="w-full h-96 rounded-lg border border-gray-300"></div>
+        <div id="map" class="w-full h-[34rem] rounded-lg border border-gray-300"></div>
     </div>
 @endif
 @endsection
@@ -250,27 +250,100 @@
     </script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            let map = L.map('map').setView([-7.8031, 111.9914], 10); // Koordinat Kabupaten Kediri
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-            
-            fetch('/api/cagar-budaya-coordinates')
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(item => {
-                        if (item.latitude && item.longitude) {
-                            L.marker([item.latitude, item.longitude])
-                                .addTo(map)
-                                .bindPopup(`<a href="/cagar-budaya/${item.id}">${item.objek_cagar_budaya}</a><br>
-                                          <small><strong>Predikat:</strong> ${item.predikat}</small><br>
-                                          <small><strong>Kategori:</strong> ${item.kategori}</small>`);
-                        }
+    document.addEventListener('DOMContentLoaded', function() {
+    let map = L.map('map').setView([-7.8031, 111.9914], 10); // Koordinat Kabupaten Kediri
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Fungsi untuk membuat konten popup
+    function createPopupContent(item) {
+        const baseContent = `
+            <div style="width: 220px;">
+                <a href="/cagar-budaya/${item.id}" class="font-semibold">${item.objek_cagar_budaya}</a>
+                <div id="img-container-${item.id}" class="mt-2 mb-2">
+                    <div class="text-center py-2">
+                        <span class="text-xs text-gray-500">Memuat gambar...</span>
+                    </div>
+                </div>
+                <div class="text-sm">
+                    <strong>Predikat:</strong> ${item.predikat}<br>
+                    <strong>Kategori:</strong> ${item.kategori}
+                </div>
+                <div class="mt-2">
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-2 rounded inline-flex items-center" style="color: white !important;">
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                        </svg>
+                        Rute Google Maps
+                    </a>
+                </div>
+            </div>
+        `;
+        return baseContent;
+    }
+    
+    // Fungsi untuk load gambar dan menampilkan di popup
+    function loadImage(item, popupContent) {
+        fetch(`/api/cagar-budaya-image/${item.id}`)
+            .then(response => response.json())
+            .then(imageData => {
+                const imageUrl = imageData.image_url || '/images/default-placeholder.jpg';
+                const imgContainer = document.getElementById(`img-container-${item.id}`);
+                
+                if (imgContainer) {
+                    // Tes dulu apakah gambar bisa diload
+                    const testImg = new Image();
+                    testImg.onload = function() {
+                        // Gambar berhasil diload, tampilkan
+                        imgContainer.innerHTML = `<img src="${imageUrl}" alt="${item.objek_cagar_budaya}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">`;
+                    };
+                    testImg.onerror = function() {
+                        // Gambar gagal diload, tampilkan placeholder
+                        console.warn(`Gambar gagal diload: ${imageUrl}`);
+                        imgContainer.innerHTML = `
+                            <img src="/images/default-placeholder.jpg" alt="${item.objek_cagar_budaya}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
+                        `;
+                    };
+                    testImg.src = imageUrl;
+                }
+            })
+            .catch(error => {
+                console.warn("Error saat memuat gambar:", error);
+                const imgContainer = document.getElementById(`img-container-${item.id}`);
+                if (imgContainer) {
+                    imgContainer.innerHTML = `
+                        <img src="/images/default-placeholder.jpg" alt="${item.objek_cagar_budaya}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px;">
+                    `;
+                }
+            });
+    }
+    
+    fetch('/api/cagar-budaya-coordinates')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(item => {
+                if (item.latitude && item.longitude) {
+                    const marker = L.marker([item.latitude, item.longitude]).addTo(map);
+                    
+                    // Buat popup dengan konten dasar
+                    const popupContent = createPopupContent(item);
+                    
+                    // Tambahkan popup ke marker
+                    const popup = marker.bindPopup(popupContent);
+                    
+                    // Muat gambar saat popup dibuka
+                    marker.on('popupopen', function() {
+                        loadImage(item, popup);
                     });
-                });
+                }
+            });
+        })
+        .catch(error => {
+            console.error("Error saat mengambil data cagar budaya:", error);
         });
+});
     </script>
 @endif
 @endpush
