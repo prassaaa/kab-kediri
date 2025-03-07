@@ -261,15 +261,21 @@
     function createPopupContent(item) {
         const baseContent = `
             <div style="width: 220px;">
-                <a href="/cagar-budaya/${item.id}" class="font-semibold">${item.objek_cagar_budaya}</a>
                 <div id="img-container-${item.id}" class="mt-2 mb-2">
                     <div class="text-center py-2">
                         <span class="text-xs text-gray-500">Memuat gambar...</span>
                     </div>
                 </div>
                 <div class="text-sm">
-                    <strong>Predikat:</strong> ${item.predikat}<br>
-                    <strong>Kategori:</strong> ${item.kategori}
+                    <a href="/cagar-budaya/${item.id || '#'}" class="font-semibold" aria-label="Lihat detail ${item.objek_cagar_budaya || 'cagar budaya'}">
+                        ${item.objek_cagar_budaya || 'Tidak ada nama'}
+                    </a>
+                    <div>
+                        <strong>Predikat:</strong> ${item.predikat || 'Tidak tersedia'}
+                    </div>
+                    <div>
+                        <strong>Kategori:</strong> ${item.kategori || 'Tidak tersedia'}
+                    </div>
                 </div>
                 <div class="mt-2">
                     <a href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-2 rounded inline-flex items-center" style="color: white !important;">
