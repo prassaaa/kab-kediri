@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Informasi Cagar Budaya - Dinas Kebudayaan dan Pariwisata Kabupaten Kediri</title>
+    <title>Cagar Budaya Kabupaten Kediri</title>
     <link rel="icon" href="{{ asset('assets/img/kediri1.png') }}" type="image/png">
     <style>
         :root {

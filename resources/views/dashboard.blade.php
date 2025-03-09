@@ -115,11 +115,11 @@
             </div>
         </div>
         
-        <!-- Grafik verifikasi -->
+        <!-- Grafik kecamatan -->
         <div class="bg-white overflow-hidden shadow-sm rounded-lg p-6">
-            <h2 class="text-lg font-semibold mb-4">Distribusi Berdasarkan Verifikasi</h2>
+            <h2 class="text-lg font-semibold mb-4">Distribusi Berdasarkan Kecamatan</h2>
             <div style="position: relative; height:300px; width:100%">
-                <canvas id="verifikasiChart"></canvas>
+                <canvas id="kecamatanChart"></canvas>
             </div>
         </div>
     </div>
@@ -160,12 +160,44 @@
                 }]
             };
             
-            const verifikasiData = {
-                labels: ['Terverifikasi', 'Belum Terverifikasi'],
+            // Data kecamatan
+            const kecamatanData = {
+                labels: [
+                    @foreach($data['kecamatan_distribution'] as $kecamatan => $count)
+                        '{{ $kecamatan }}',
+                    @endforeach
+                ],
                 datasets: [{
-                    data: [{{ $data['verified_cagar_budaya'] ?? 0 }}, {{ $data['unverified_cagar_budaya'] ?? 0 }}],
-                    backgroundColor: ['rgba(46, 204, 113, 0.7)', 'rgba(231, 76, 60, 0.7)'],
-                    borderColor: ['rgba(46, 204, 113, 1)', 'rgba(231, 76, 60, 1)'],
+                    label: 'Jumlah Cagar Budaya',
+                    data: [
+                        @foreach($data['kecamatan_distribution'] as $count)
+                            {{ $count }},
+                        @endforeach
+                    ],
+                    backgroundColor: [
+                        'rgba(52, 152, 219, 0.7)',
+                        'rgba(155, 89, 182, 0.7)',
+                        'rgba(46, 204, 113, 0.7)',
+                        'rgba(241, 196, 15, 0.7)',
+                        'rgba(231, 76, 60, 0.7)',
+                        'rgba(52, 73, 94, 0.7)',
+                        'rgba(26, 188, 156, 0.7)',
+                        'rgba(230, 126, 34, 0.7)',
+                        'rgba(149, 165, 166, 0.7)',
+                        'rgba(41, 128, 185, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(155, 89, 182, 1)',
+                        'rgba(46, 204, 113, 1)',
+                        'rgba(241, 196, 15, 1)',
+                        'rgba(231, 76, 60, 1)',
+                        'rgba(52, 73, 94, 1)',
+                        'rgba(26, 188, 156, 1)',
+                        'rgba(230, 126, 34, 1)',
+                        'rgba(149, 165, 166, 1)',
+                        'rgba(41, 128, 185, 1)'
+                    ],
                     borderWidth: 1
                 }]
             };
@@ -228,6 +260,26 @@
                 }
             };
             
+            // Opsi untuk grafik kecamatan (horizontal bar)
+            const kecamatanOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            };
+            
             // Buat grafik
             new Chart(document.getElementById('predikatChart'), {
                 type: 'doughnut',
@@ -235,10 +287,10 @@
                 options: pieOptions
             });
             
-            new Chart(document.getElementById('verifikasiChart'), {
-                type: 'doughnut',
-                data: verifikasiData,
-                options: pieOptions
+            new Chart(document.getElementById('kecamatanChart'), {
+                type: 'bar',
+                data: kecamatanData,
+                options: kecamatanOptions
             });
             
             new Chart(document.getElementById('kategoriChart'), {
@@ -299,7 +351,6 @@
                 const imgContainer = document.getElementById(`img-container-${item.id}`);
                 
                 if (imgContainer) {
-                    // Tes dulu apakah gambar bisa diload
                     const testImg = new Image();
                     testImg.onload = function() {
                         // Gambar berhasil diload, tampilkan

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CagarBudaya;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -26,7 +27,10 @@ class DashboardController extends Controller
                 'Struktur' => CagarBudaya::where('kategori', 'Struktur')->count(),
                 'Situs' => CagarBudaya::where('kategori', 'Situs')->count(),
                 'Kawasan' => CagarBudaya::where('kategori', 'Kawasan')->count(),
-            ]
+            ],
+            
+            // Tambahkan distribusi kecamatan
+            'kecamatan_distribution' => $this->getKecamatanDistribution()
         ];
         
         // Jika superadmin, tambahkan data admin dan user
@@ -36,6 +40,25 @@ class DashboardController extends Controller
         }
         
         return view('dashboard', compact('data'));
+    }
+    
+    /**
+     * (kecamatan)
+     * 
+     * @return array
+     */
+    private function getKecamatanDistribution()
+    {
+        $kecamatanData = CagarBudaya::select('lokasi_kecamatan', DB::raw('count(*) as total'))
+            ->whereNotNull('lokasi_kecamatan')
+            ->groupBy('lokasi_kecamatan')
+            ->orderBy('total', 'desc')
+            ->get()
+            ->take(10) // Limit to top 10 kecamatan
+            ->pluck('total', 'lokasi_kecamatan')
+            ->toArray();
+            
+        return $kecamatanData;
     }
     
     public function notifikasi()
