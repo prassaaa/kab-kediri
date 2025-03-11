@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\CagarBudaya;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\PDF;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Barryvdh\DomPDF\Facade\PDF;
-use Illuminate\Support\Str;
 
 class CagarBudayaController extends Controller
 {
@@ -272,5 +273,92 @@ public function exportById(CagarBudaya $cagarBudaya)
     ]);
     
     return $pdf->stream('cagar-budaya-' . \Illuminate\Support\Str::slug($cagarBudaya->objek_cagar_budaya) . '.pdf');
+}
+
+/**
+ * Request revision for a cagar budaya data.
+ */
+public function requestRevision(Request $request, CagarBudaya $cagarBudaya)
+{
+    // Hanya superadmin yang bisa meminta revisi
+    if (Auth::user()->role !== 'superadmin') {
+        abort(403, 'Tidak memiliki izin untuk meminta revisi data.');
+    }
+    
+    $validated = $request->validate([
+        'revision_notes' => 'required|string',
+    ]);
+    
+    // Log untuk debugging jika diperlukan
+    Log::info('Requesting revision for cagar budaya: ' . $cagarBudaya->id);
+    Log::info('Revision notes: ' . $validated['revision_notes']);
+    
+    $cagarBudaya->update([
+        'status' => 'needs_revision',
+        'revision_notes' => $validated['revision_notes'],
+        'is_verified' => false,
+    ]);
+    
+    return redirect()->route('notifikasi')
+        ->with('success', 'Permintaan revisi berhasil dikirim.');
+}
+
+/**
+ * Submit revision for a cagar budaya data.
+ */
+public function submitRevision(Request $request, CagarBudaya $cagarBudaya)
+{
+    // Cek apakah user adalah pembuat data
+    if (Auth::id() !== $cagarBudaya->created_by) {
+        abort(403, 'Anda tidak memiliki izin untuk merevisi data ini.');
+    }
+    
+    // Cek apakah data memang perlu direvisi
+    if ($cagarBudaya->status !== 'needs_revision') {
+        abort(403, 'Data ini tidak memerlukan revisi.');
+    }
+    
+    // Validasi data input sama seperti method update
+    $validated = $request->validate([
+        'objek_cagar_budaya' => 'required|string|max:255',
+        'predikat' => 'required|in:Cagar Budaya,Objek diduga cagar budaya',
+        'kategori' => 'required|in:Benda,Bangunan,Struktur,Situs,Kawasan',
+        'no_reg_bpk_lama' => 'nullable|string|max:255',
+        'no_reg_bpk_baru' => 'nullable|string|max:255',
+        'no_reg_disparbud_nomor_urut' => 'nullable|string|max:255',
+        'no_reg_disparbud_kode_kecamatan' => 'nullable|string|max:255',
+        'no_reg_disparbud_kode_kabupaten' => 'nullable|string|max:255',
+        'no_reg_disparbud_tahun' => 'nullable|string|max:255',
+        'lokasi_jalan_dukuhan' => 'nullable|string|max:255',
+        'lokasi_dusun' => 'nullable|string|max:255',
+        'lokasi_desa' => 'required|string|max:255',
+        'lokasi_kecamatan' => 'required|string|max:255',
+        'bahan' => 'nullable|string|max:255',
+        'longitude' => 'nullable|numeric',
+        'latitude' => 'nullable|numeric',
+        'deskripsi_singkat' => 'required|string',
+        'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'kondisi_saat_ini' => 'nullable|string',
+    ]);
+    
+    // Handle file upload jika ada
+    if ($request->hasFile('gambar')) {
+        // Hapus gambar lama jika ada
+        if ($cagarBudaya->gambar) {
+            Storage::disk('public')->delete($cagarBudaya->gambar);
+        }
+        
+        $gambarPath = $request->file('gambar')->store('cagar-budaya', 'public');
+        $validated['gambar'] = $gambarPath;
+    }
+    
+    // Update data
+    $validated['status'] = 'revised';
+    $validated['revision_notes'] = null; // Clear revision notes
+    
+    $cagarBudaya->update($validated);
+    
+    return redirect()->route('cagar-budaya.show', $cagarBudaya)
+        ->with('success', 'Revisi data cagar budaya berhasil disubmit.');
 }
 }

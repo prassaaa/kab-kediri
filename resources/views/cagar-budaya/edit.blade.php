@@ -14,7 +14,21 @@
             </a>
         </div>
         
-        <form action="{{ route('cagar-budaya.update', $cagarBudaya) }}" method="POST" enctype="multipart/form-data">
+        @if($cagarBudaya->status === 'needs_revision' && $cagarBudaya->revision_notes)
+        <div class="p-4 mb-6 border-2 border-yellow-400 bg-yellow-50 rounded-lg">
+            <div class="flex items-start">
+                <svg class="w-6 h-6 text-yellow-600 mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <div>
+                    <h3 class="font-semibold text-yellow-800 text-lg">Catatan Revisi:</h3>
+                    <p class="text-yellow-700 mt-1">{{ $cagarBudaya->revision_notes }}</p>
+                </div>
+            </div>
+        </div>
+        @endif
+        
+        <form action="{{ $cagarBudaya->status === 'needs_revision' ? route('cagar-budaya.submit-revision', $cagarBudaya) : route('cagar-budaya.update', $cagarBudaya) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             
@@ -259,7 +273,7 @@
             
             <div class="mt-8 text-center">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">
-                    Perbarui Data
+                    {{ $cagarBudaya->status === 'needs_revision' ? 'Kirim Hasil Revisi' : 'Perbarui Data' }}
                 </button>
             </div>
         </form>

@@ -33,6 +33,8 @@ class CagarBudaya extends Model
         'verified_by',
         'verified_at',
         'created_by',
+        'status',           // Kolom baru untuk status revisi
+        'revision_notes',
     ];
 
     // Relasi ke user yang membuat
@@ -45,5 +47,11 @@ class CagarBudaya extends Model
     public function verifier() 
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    // Cagar budaya that need revision.
+    public function scopeNeedsRevision($query)
+    {
+    return $query->where('status', 'needs_revision');
     }
 }

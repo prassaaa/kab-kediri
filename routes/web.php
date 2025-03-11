@@ -45,7 +45,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/cagar-budaya', [CagarBudayaController::class, 'store'])->name('cagar-budaya.store');
         Route::get('/cagar-budaya/{cagarBudaya}/edit', [CagarBudayaController::class, 'edit'])->name('cagar-budaya.edit');
         Route::put('/cagar-budaya/{cagarBudaya}', [CagarBudayaController::class, 'update'])->name('cagar-budaya.update');
-        Route::get('/notifikasi', [DashboardController::class, 'notifikasi'])->name('notifikasi')->middleware('auth', 'role:admin,superadmin');
+        
+        // Ubah route notifikasi ke notifikasi.index (sesuai dengan struktur file)
+        Route::get('/notifikasi', [DashboardController::class, 'notifikasi'])->name('notifikasi');
+        
+        // Route baru untuk submit hasil revisi
+        Route::put('/cagar-budaya/{cagarBudaya}/submit-revision', [CagarBudayaController::class, 'submitRevision'])
+            ->name('cagar-budaya.submit-revision');
     });
     
     // Route khusus superadmin
@@ -59,6 +65,10 @@ Route::middleware('auth')->group(function () {
         // Verifikasi cagar budaya
         Route::put('/cagar-budaya/{cagarBudaya}/verify', [CagarBudayaController::class, 'verify'])->name('cagar-budaya.verify');
         Route::delete('/cagar-budaya/{cagarBudaya}', [CagarBudayaController::class, 'destroy'])->name('cagar-budaya.destroy');
+        
+        // Route baru untuk meminta revisi (gunakan POST, bukan PUT)
+        Route::post('/cagar-budaya/{cagarBudaya}/request-revision', [CagarBudayaController::class, 'requestRevision'])
+            ->name('cagar-budaya.request-revision');
     });
 });
 

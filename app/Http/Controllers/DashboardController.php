@@ -6,6 +6,7 @@ use App\Models\CagarBudaya;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -61,14 +62,28 @@ class DashboardController extends Controller
         return $kecamatanData;
     }
     
+        /**
+     * Show notification page.
+     */
     public function notifikasi()
     {
-        // Implementasi notifikasi (untuk tahap awal, kita bisa menampilkan data cagar budaya yang belum diverifikasi)
+        // Ambil data cagar budaya yang belum diverifikasi
         $unverified = CagarBudaya::where('is_verified', false)
-            ->with('creator')
-            ->orderBy('created_at', 'desc')
-            ->get();
+                      ->with('creator')
+                      ->latest()
+                      ->get();
+        
+        // Jika user adalah admin, ambil hanya data yang memerlukan revisi miliknya
+        if (Auth::user()->role === 'admin') {
+            $needsRevision = CagarBudaya::where('status', 'needs_revision')
+                            ->where('created_by', Auth::id())
+                            ->with('creator')
+                            ->latest()
+                            ->get();
             
+            return view('notifikasi.index', compact('unverified', 'needsRevision'));
+        }
+        
         return view('notifikasi.index', compact('unverified'));
     }
 }
