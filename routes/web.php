@@ -6,6 +6,14 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
+
+
+// storage-link //
+Route::get('/storage-link', function () {
+    Artisan::call('storage:link');
+    return 'Storage linked successfully.';
+});
 
 // Route Publik
 Route::get('/', function () {
