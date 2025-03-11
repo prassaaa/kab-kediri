@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="description" content="Sistem Informasi Cagar Budaya">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" href="{{ asset('assets/img/kediri1.png') }}" type="image/png">
     
     <title>{{ config('app.name', 'Laravel') }} - Register</title>
     
@@ -107,7 +108,7 @@
                         <img src="{{ asset('assets/img/kediri2.png') }}" alt="Logo Disparbud" class="img-fluid logo-image me-3" style="max-height: 100px;">
                         <div class="logo-text text-start">
                             <h3 class="fw-bold mb-1">Sistem Informasi</h3>
-                            <h4 class="text-muted">Cagar Budaya Kabupaten Kediri</h4>
+                            <h4 class="text-muted">Warisan Budaya Kabupaten Kediri</h4>
                         </div>
                     </div>
                 </div>

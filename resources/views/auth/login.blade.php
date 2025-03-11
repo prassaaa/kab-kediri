@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
     <title>{{ config('app.name', 'Laravel') }} - Login</title>
+    <link rel="icon" href="{{ asset('assets/img/kediri1.png') }}" type="image/png">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
     <style>
@@ -107,7 +108,7 @@
                         <img src="{{ asset('assets/img/kediri2.png') }}" alt="Logo Disparbud" class="img-fluid logo-image me-3" style="max-height: 100px;">
                         <div class="logo-text text-start">
                             <h3 class="fw-bold mb-1">Sistem Informasi</h3>
-                            <h4 class="text-muted">Cagar Budaya Kabupaten Kediri</h4>
+                            <h4 class="text-muted">Warisan Budaya Kabupaten Kediri</h4>
                         </div>
                     </div>
                 </div>

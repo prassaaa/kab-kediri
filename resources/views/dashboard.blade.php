@@ -115,7 +115,7 @@
             </div>
         </div>
         
-        <!-- Grafik kecamatan -->
+        <!-- Grafik kecamatan (ganti dari verifikasi) -->
         <div class="bg-white overflow-hidden shadow-sm rounded-lg p-6">
             <h2 class="text-lg font-semibold mb-4">Distribusi Berdasarkan Kecamatan</h2>
             <div style="position: relative; height:300px; width:100%">
@@ -160,7 +160,7 @@
                 }]
             };
             
-            // Data kecamatan
+            // Data kecamatan (ganti dari verifikasi)
             const kecamatanData = {
                 labels: [
                     @foreach($data['kecamatan_distribution'] as $kecamatan => $count)
@@ -264,7 +264,7 @@
             const kecamatanOptions = {
                 responsive: true,
                 maintainAspectRatio: false,
-                indexAxis: 'y',
+                indexAxis: 'y',  // Membuat bar horizontal
                 scales: {
                     x: {
                         beginAtZero: true,
@@ -301,13 +301,196 @@
         });
     </script>
 
-    <script>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
     let map = L.map('map').setView([-7.8031, 111.9914], 10); // Koordinat Kabupaten Kediri
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+    
+    // Menambahkan kontrol lokasi saat ini
+    let locationMarker, locationCircle;
+    const locationControl = L.control({position: 'topleft'});
+    
+    locationControl.onAdd = function(map) {
+        const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+        div.innerHTML = `<a href="#" title="Tampilkan lokasi saya" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </a>`;
+        
+        div.onclick = function() {
+            getLocation();
+            return false;
+        };
+        
+        return div;
+    };
+    
+    locationControl.addTo(map);
+    
+    // Variabel untuk menyimpan referensi notifikasi inaccurate
+    let inaccurateToast = null;
+    
+    // Fungsi untuk mendapatkan dan menampilkan lokasi pengguna saat ini dengan akurasi maksimum
+    function getLocation() {
+        if (navigator.geolocation) {
+            // Menampilkan indikator loading
+            const loadingToast = document.createElement('div');
+            loadingToast.className = 'fixed top-4 right-4 bg-blue-500 text-white p-3 rounded shadow-lg z-50';
+            loadingToast.innerHTML = 'Mendapatkan lokasi Anda...';
+            document.body.appendChild(loadingToast);
+            
+            // Menggunakan watchPosition untuk melacak lokasi secara real-time
+            const watchId = navigator.geolocation.watchPosition(
+                function(position) {
+                    // Hapus loading toast setelah pertama kali mendapatkan lokasi
+                    if (document.body.contains(loadingToast)) {
+                        document.body.removeChild(loadingToast);
+                    }
+                    
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    console.log("Lokasi ditemukan:", lat, lng, "Akurasi:", accuracy, "meter");
+                    
+                    // Jika akurasi lebih dari 50m, tampilkan/tetap pertahankan notifikasi
+                    if (accuracy > 50) {
+                        if (!inaccurateToast) {
+                            inaccurateToast = document.createElement('div');
+                            inaccurateToast.className = 'fixed top-4 right-4 bg-yellow-500 text-white p-3 rounded shadow-lg z-50';
+                            inaccurateToast.innerHTML = `Lokasi kurang akurat (${Math.round(accuracy)}m). Mencoba lagi untuk akurasi lebih baik...`;
+                            document.body.appendChild(inaccurateToast);
+                        } else {
+                            // Update teks notifikasi dengan akurasi terbaru
+                            inaccurateToast.innerHTML = `Lokasi kurang akurat (${Math.round(accuracy)}m). Mencoba lagi untuk akurasi lebih baik...`;
+                        }
+                        return; // Lanjutkan looping
+                    }
+                    
+                    // Jika akurasi ≤ 50m, hapus notifikasi inaccurate jika ada
+                    if (inaccurateToast && document.body.contains(inaccurateToast)) {
+                        document.body.removeChild(inaccurateToast);
+                        inaccurateToast = null;
+                    }
+                    
+                    // Hapus marker lokasi sebelumnya jika ada
+                    if (locationMarker) {
+                        map.removeLayer(locationMarker);
+                    }
+                    
+                    if (locationCircle) {
+                        map.removeLayer(locationCircle);
+                    }
+                    
+                    // Tambahkan marker lokasi saat ini dengan ikon khusus
+                    const locationIcon = L.divIcon({
+                        html: `<div style="background-color: #4285F4; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3);"></div>`,
+                        className: 'location-marker',
+                        iconSize: [22, 22],
+                        iconAnchor: [11, 11]
+                    });
+                    
+                    locationMarker = L.marker([lat, lng], {
+                        icon: locationIcon,
+                        zIndexOffset: 1000 // Pastikan marker lokasi di atas marker lainnya
+                    }).addTo(map);
+                    
+                    // Tambahkan lingkaran yang menunjukkan akurasi
+                    locationCircle = L.circle([lat, lng], {
+                        radius: accuracy,
+                        color: '#4285F4',
+                        fillColor: '#4285F4',
+                        fillOpacity: 0.2,
+                        weight: 1
+                    }).addTo(map);
+                    
+                    // Zoom ke lokasi dengan level zoom yang sesuai dengan akurasi
+                    const zoomLevel = calculateZoomLevel(accuracy);
+                    map.setView([lat, lng], zoomLevel);
+                    
+                    // Tambahkan popup yang menampilkan informasi lokasi
+                    locationMarker.bindPopup(`
+                        <strong>Lokasi Anda Saat Ini</strong><br>
+                        Koordinat: ${lat.toFixed(6)}, ${lng.toFixed(6)}<br>
+                        Akurasi: ${Math.round(accuracy)} meter
+                    `).openPopup();
+                    
+                    // Tampilkan notifikasi sukses
+                    const successToast = document.createElement('div');
+                    successToast.className = 'fixed top-4 right-4 bg-green-500 text-white p-3 rounded shadow-lg z-50';
+                    successToast.innerHTML = 'Lokasi Anda berhasil ditampilkan!';
+                    document.body.appendChild(successToast);
+                    
+                    // Hilangkan notifikasi sukses setelah 3 detik
+                    setTimeout(function() {
+                        if (document.body.contains(successToast)) {
+                            document.body.removeChild(successToast);
+                        }
+                    }, 3000);
+                    
+                    // Tetap lanjutkan watchPosition untuk melacak perubahan lokasi
+                    // Tidak memanggil clearWatch agar terus melacak
+                },
+                function(error) {
+                    // Hapus loading toast
+                    if (document.body.contains(loadingToast)) {
+                        document.body.removeChild(loadingToast);
+                    }
+                    
+                    // Tampilkan pesan error
+                    let errorMessage = "Terjadi kesalahan saat mendapatkan lokasi Anda.";
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = "Akses lokasi ditolak. Harap izinkan akses lokasi di pengaturan browser Anda.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = "Informasi lokasi tidak tersedia.";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = "Waktu permintaan lokasi habis.";
+                            break;
+                    }
+                    
+                    console.error("Error lokasi:", error.code, error.message);
+                    
+                    const errorToast = document.createElement('div');
+                    errorToast.className = 'fixed top-4 right-4 bg-red-500 text-white p-3 rounded shadow-lg z-50';
+                    errorToast.innerHTML = errorMessage;
+                    document.body.appendChild(errorToast);
+                    
+                    // Hilangkan notifikasi error setelah 5 detik
+                    setTimeout(function() {
+                        if (document.body.contains(errorToast)) {
+                            document.body.removeChild(errorToast);
+                        }
+                    }, 5000);
+                },
+                {
+                    enableHighAccuracy: true,  // Meminta akurasi tinggi (GPS)
+                    timeout: 15000,            // Timeout lebih lama (15 detik)
+                    maximumAge: 0              // Selalu minta posisi baru, jangan gunakan cache
+                }
+            );
+        } else {
+            alert("Geolocation tidak didukung oleh browser Anda");
+        }
+    }
+    
+    // Fungsi untuk menghitung level zoom berdasarkan akurasi
+    function calculateZoomLevel(accuracy) {
+        if (accuracy <= 10) return 19;       // Sangat akurat (< 10m)
+        else if (accuracy <= 50) return 18;  // Akurat (10-50m)
+        else if (accuracy <= 100) return 17; // Cukup akurat (50-100m)
+        else if (accuracy <= 500) return 16; // Kurang akurat (100-500m)
+        else if (accuracy <= 1000) return 15; // Tidak akurat (500-1000m)
+        else return 14;                      // Sangat tidak akurat (> 1000m)
+    }
     
     // Fungsi untuk membuat konten popup
     function createPopupContent(item) {
@@ -328,19 +511,54 @@
                     <div>
                         <strong>Kategori:</strong> ${item.kategori || 'Tidak tersedia'}
                     </div>
+                    <div>
+                        <strong>Koordinat:</strong> ${item.latitude.toFixed(6)}, ${item.longitude.toFixed(6)}
+                    </div>
                 </div>
-                <div class="mt-2">
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-2 rounded inline-flex items-center" style="color: white !important;">
+                <div class="mt-2 grid grid-cols-2 gap-2">
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}" target="_blank" class="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-2 rounded inline-flex items-center justify-center" style="color: white !important;">
                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
                         </svg>
-                        Rute Google Maps
+                        Rute
                     </a>
+                    <button onclick="getDirectionsFromCurrentLocation(${item.latitude}, ${item.longitude}, '${item.objek_cagar_budaya || 'cagar budaya'}')" class="bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-2 rounded inline-flex items-center justify-center" style="color: white !important;">
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Dari Sini
+                    </button>
                 </div>
             </div>
         `;
         return baseContent;
     }
+    
+    // Fungsi untuk mendapatkan rute dari lokasi saat ini
+    window.getDirectionsFromCurrentLocation = function(destLat, destLng, destName) {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const originLat = position.coords.latitude;
+                    const originLng = position.coords.longitude;
+                    
+                    // Buka Google Maps dengan rute dari lokasi saat ini
+                    window.open(`https://www.google.com/maps/dir/${originLat},${originLng}/${destLat},${destLng}/${encodeURIComponent(destName)}`, '_blank');
+                },
+                function(error) {
+                    alert("Tidak dapat mendapatkan lokasi Anda saat ini: " + error.message);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            alert("Geolocation tidak didukung oleh browser Anda");
+        }
+    };
     
     // Fungsi untuk load gambar dan menampilkan di popup
     function loadImage(item, popupContent) {
@@ -351,6 +569,7 @@
                 const imgContainer = document.getElementById(`img-container-${item.id}`);
                 
                 if (imgContainer) {
+                    // Tes dulu apakah gambar bisa diload
                     const testImg = new Image();
                     testImg.onload = function() {
                         // Gambar berhasil diload, tampilkan
@@ -378,29 +597,64 @@
     }
     
     fetch('/api/cagar-budaya-coordinates')
-        .then(response => response.json())
-        .then(data => {
+    .then(response => response.json())
+    .then(data => {
+        if (data.length > 0) {
+            // Prepare array to hold valid coordinates
+            const validMarkers = [];
+            
             data.forEach(item => {
+                // Validate coordinates before creating markers
                 if (item.latitude && item.longitude) {
-                    const marker = L.marker([item.latitude, item.longitude]).addTo(map);
-                    
-                    // Buat popup dengan konten dasar
-                    const popupContent = createPopupContent(item);
-                    
-                    // Tambahkan popup ke marker
-                    const popup = marker.bindPopup(popupContent);
-                    
-                    // Muat gambar saat popup dibuka
-                    marker.on('popupopen', function() {
-                        loadImage(item, popup);
-                    });
+                    try {
+                        // Convert to numbers if they're strings
+                        const lat = parseFloat(item.latitude);
+                        const lng = parseFloat(item.longitude);
+                        
+                        // Validate that coordinates are in reasonable range
+                        if (!isNaN(lat) && !isNaN(lng) && 
+                            lat >= -90 && lat <= 90 && 
+                            lng >= -180 && lng <= 180) {
+                            
+                            // Create marker with valid coordinates
+                            const marker = L.marker([lat, lng]).addTo(map);
+                            
+                            // Update the item with parsed coordinates
+                            item.latitude = lat;
+                            item.longitude = lng;
+                            
+                            // Create popup
+                            const popupContent = createPopupContent(item);
+                            const popup = marker.bindPopup(popupContent);
+                            
+                            // Load image when popup is opened
+                            marker.on('popupopen', function() {
+                                loadImage(item, popup);
+                            });
+                            
+                            validMarkers.push({
+                                lat: lat,
+                                lng: lng
+                            });
+                        } else {
+                            console.warn(`Invalid coordinate range for item ${item.id}: ${lat}, ${lng}`);
+                        }
+                    } catch (e) {
+                        console.error(`Error processing coordinates for item ${item.id}:`, e);
+                    }
+                } else {
+                    console.warn(`Missing coordinates for item ${item.id}`);
                 }
             });
-        })
-        .catch(error => {
-            console.error("Error saat mengambil data cagar budaya:", error);
-        });
+            
+        } else {
+            console.warn("No cultural heritage data received");
+        }
+    })
+    .catch(error => {
+        console.error("Error saat mengambil data cagar budaya:", error);
+    });
 });
-    </script>
+</script>
 @endif
 @endpush
