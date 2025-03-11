@@ -287,15 +287,25 @@ public function requestRevision(Request $request, CagarBudaya $cagarBudaya)
     
     $validated = $request->validate([
         'revision_notes' => 'required|string',
+        'revision_history' => 'nullable|string',
     ]);
     
-    // Log untuk debugging jika diperlukan
-    Log::info('Requesting revision for cagar budaya: ' . $cagarBudaya->id);
-    Log::info('Revision notes: ' . $validated['revision_notes']);
+    // Persiapkan histori revisi jika ada revisi sebelumnya
+    $revisionHistory = $validated['revision_history'] ?? '';
+    $currentDate = now()->format('d/m/Y H:i');
+    $currentUser = Auth::user()->name;
+    
+    // Simpan catatan revisi saat ini ke dalam histori jika sudah ada histori sebelumnya
+    if (!empty($revisionHistory)) {
+        $revisionHistory = "[$currentDate oleh $currentUser]: {$validated['revision_notes']}\n\nRevisi sebelumnya:\n$revisionHistory";
+    } else {
+        $revisionHistory = "[$currentDate oleh $currentUser]: {$validated['revision_notes']}";
+    }
     
     $cagarBudaya->update([
         'status' => 'needs_revision',
         'revision_notes' => $validated['revision_notes'],
+        'revision_history' => $revisionHistory,
         'is_verified' => false,
     ]);
     
@@ -352,9 +362,14 @@ public function submitRevision(Request $request, CagarBudaya $cagarBudaya)
         $validated['gambar'] = $gambarPath;
     }
     
-    // Update data
+    // Update data - simpan catatan revisi dan riwayat revisi
     $validated['status'] = 'revised';
-    $validated['revision_notes'] = null; // Clear revision notes
+    
+    // PENTING: Pastikan revision_notes dan revision_history tetap tersimpan
+    // Kita tidak mengubah nilai dari revision_notes agar masih bisa dilihat setelah revisi
+    // Revision history juga tetap disimpan untuk menampilkan riwayat lengkap
+    $validated['revision_notes'] = $cagarBudaya->revision_notes;
+    $validated['revision_history'] = $cagarBudaya->revision_history;
     
     $cagarBudaya->update($validated);
     

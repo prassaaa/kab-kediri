@@ -73,6 +73,17 @@ class DashboardController extends Controller
                       ->latest()
                       ->get();
         
+        // Jika user adalah superadmin, tambahkan data yang sudah direvisi
+        if (Auth::user()->role === 'superadmin') {
+            $revised = CagarBudaya::where('status', 'revised')
+                      ->where('is_verified', false)
+                      ->with('creator')
+                      ->latest()
+                      ->get();
+            
+            return view('notifikasi.index', compact('unverified', 'revised'));
+        }
+        
         // Jika user adalah admin, ambil hanya data yang memerlukan revisi miliknya
         if (Auth::user()->role === 'admin') {
             $needsRevision = CagarBudaya::where('status', 'needs_revision')
