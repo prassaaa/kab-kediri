@@ -344,10 +344,10 @@
             loadingToast.innerHTML = 'Mendapatkan lokasi Anda...';
             document.body.appendChild(loadingToast);
             
-            // Menggunakan watchPosition untuk melacak lokasi secara real-time
-            const watchId = navigator.geolocation.watchPosition(
+            // Menggunakan getCurrentPosition untuk mendapatkan lokasi satu kali
+            navigator.geolocation.getCurrentPosition(
                 function(position) {
-                    // Hapus loading toast setelah pertama kali mendapatkan lokasi
+                    // Hapus loading toast
                     if (document.body.contains(loadingToast)) {
                         document.body.removeChild(loadingToast);
                     }
@@ -358,24 +358,19 @@
                     
                     console.log("Lokasi ditemukan:", lat, lng, "Akurasi:", accuracy, "meter");
                     
-                    // Jika akurasi lebih dari 50m, tampilkan/tetap pertahankan notifikasi
+                    // Jika akurasi lebih dari 50m, tampilkan notifikasi
                     if (accuracy > 50) {
-                        if (!inaccurateToast) {
-                            inaccurateToast = document.createElement('div');
-                            inaccurateToast.className = 'fixed top-4 right-4 bg-yellow-500 text-white p-3 rounded shadow-lg z-50';
-                            inaccurateToast.innerHTML = `Lokasi kurang akurat (${Math.round(accuracy)}m). Mencoba lagi untuk akurasi lebih baik...`;
-                            document.body.appendChild(inaccurateToast);
-                        } else {
-                            // Update teks notifikasi dengan akurasi terbaru
-                            inaccurateToast.innerHTML = `Lokasi kurang akurat (${Math.round(accuracy)}m). Mencoba lagi untuk akurasi lebih baik...`;
-                        }
-                        return; // Lanjutkan looping
-                    }
-                    
-                    // Jika akurasi ≤ 50m, hapus notifikasi inaccurate jika ada
-                    if (inaccurateToast && document.body.contains(inaccurateToast)) {
-                        document.body.removeChild(inaccurateToast);
-                        inaccurateToast = null;
+                        const inaccurateToast = document.createElement('div');
+                        inaccurateToast.className = 'fixed top-4 right-4 bg-yellow-500 text-white p-3 rounded shadow-lg z-50';
+                        inaccurateToast.innerHTML = `Lokasi kurang akurat (${Math.round(accuracy)}m).`;
+                        document.body.appendChild(inaccurateToast);
+                        
+                        // Hilangkan notifikasi setelah 5 detik
+                        setTimeout(function() {
+                            if (document.body.contains(inaccurateToast)) {
+                                document.body.removeChild(inaccurateToast);
+                            }
+                        }, 5000);
                     }
                     
                     // Hapus marker lokasi sebelumnya jika ada
@@ -432,9 +427,6 @@
                             document.body.removeChild(successToast);
                         }
                     }, 3000);
-                    
-                    // Tetap lanjutkan watchPosition untuk melacak perubahan lokasi
-                    // Tidak memanggil clearWatch agar terus melacak
                 },
                 function(error) {
                     // Hapus loading toast
@@ -491,6 +483,52 @@
         else if (accuracy <= 1000) return 15; // Tidak akurat (500-1000m)
         else return 14;                      // Sangat tidak akurat (> 1000m)
     }
+    
+    // Warna berdasarkan kategori cagar budaya (sesuai dengan warna marker Leaflet yang tersedia)
+    const categoryColors = {
+        'Benda': 'red',          // Merah
+        'Bangunan': 'blue',      // Biru
+        'Struktur': 'green',     // Hijau
+        'Situs': 'violet',       // Ungu
+        'Kawasan': 'orange',     // Oranye
+        'default': 'blue'        // Biru (warna default)
+    };
+    
+    // Fungsi untuk mendapatkan warna berdasarkan kategori
+    function getCategoryColor(category) {
+        return categoryColors[category] || categoryColors.default;
+    }
+    
+    // Menambahkan legenda kategori
+    const legend = L.control({position: 'bottomright'});
+    
+    legend.onAdd = function(map) {
+        const div = L.DomUtil.create('div', 'info legend');
+        div.style.backgroundColor = 'white';
+        div.style.padding = '10px';
+        div.style.borderRadius = '5px';
+        div.style.boxShadow = '0 0 5px rgba(0,0,0,0.2)';
+        
+        let labels = ['<strong>Kategori Cagar Budaya</strong>'];
+        
+        // Menambahkan entry untuk setiap kategori
+        Object.entries(categoryColors).forEach(([category, color]) => {
+            if (category !== 'default') {
+                labels.push(
+                    `<div class="legend-item" style="margin-top: 5px;">
+                        <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png" 
+                             style="width: 12px; display: inline-block; margin-right: 5px;">
+                        <span>${category}</span>
+                    </div>`
+                );
+            }
+        });
+        
+        div.innerHTML = labels.join('<br>');
+        return div;
+    };
+    
+    legend.addTo(map);
     
     // Fungsi untuk membuat konten popup
     function createPopupContent(item) {
@@ -616,8 +654,21 @@
                             lat >= -90 && lat <= 90 && 
                             lng >= -180 && lng <= 180) {
                             
-                            // Create marker with valid coordinates
-                            const marker = L.marker([lat, lng]).addTo(map);
+                            // Get the color based on the category
+                            const category = item.kategori || 'default';
+                            const markerColor = getCategoryColor(category);
+                            
+                            // Create default marker with custom color
+                            const marker = L.marker([lat, lng], {
+                                icon: new L.Icon({
+                                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-' + markerColor.replace('#', '') + '.png',
+                                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                                    iconSize: [25, 41],
+                                    iconAnchor: [12, 41],
+                                    popupAnchor: [1, -34],
+                                    shadowSize: [41, 41]
+                                })
+                            }).addTo(map);
                             
                             // Update the item with parsed coordinates
                             item.latitude = lat;
