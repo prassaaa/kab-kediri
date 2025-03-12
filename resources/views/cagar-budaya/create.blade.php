@@ -359,8 +359,273 @@
             return { latitude, longitude };
         }
         
-        // Attach event handler
+        // Attach event handler for UTM conversion
         document.getElementById('convert_utm').addEventListener('click', convertUTM);
+
+        // Element untuk form dan notifikasi
+        const uploadForm = document.querySelector('form[enctype="multipart/form-data"]');
+        const submitButton = uploadForm.querySelector('button[type="submit"]');
+        
+        // Buat elemen untuk notifikasi status koneksi
+        const connectionStatusContainer = document.createElement('div');
+        connectionStatusContainer.id = 'connection-status-container';
+        connectionStatusContainer.className = 'fixed bottom-4 right-4 p-3 rounded-lg shadow-lg z-50 transition-all duration-300';
+        connectionStatusContainer.innerHTML = `
+            <div class="flex items-center gap-2">
+                <span id="connection-indicator" class="inline-block w-3 h-3 rounded-full"></span>
+                <span id="connection-status-text" class="text-sm font-medium"></span>
+            </div>
+        `;
+        document.body.appendChild(connectionStatusContainer);
+        
+        const connectionIndicator = document.getElementById('connection-indicator');
+        const connectionStatusText = document.getElementById('connection-status-text');
+        
+        // Container untuk notifikasi upload
+        const uploadNotification = document.createElement('div');
+        uploadNotification.id = 'upload-notification';
+        uploadNotification.className = 'fixed top-0 left-0 w-full p-3 text-center text-white font-medium transform -translate-y-full transition-transform duration-300 z-50';
+        document.body.appendChild(uploadNotification);
+        
+        // Variabel untuk menyimpan status koneksi terakhir yang diperiksa
+        let lastConnectionStatus = {
+            online: navigator.onLine,
+            speed: 'unknown',
+            latency: 0
+        };
+        
+        // Fungsi untuk mengupdate tampilan status koneksi
+        function updateConnectionUI() {
+            // Reset terlebih dahulu
+            connectionStatusContainer.classList.remove('bg-red-100', 'bg-yellow-100', 'bg-green-100');
+            connectionIndicator.classList.remove('bg-red-600', 'bg-yellow-500', 'bg-green-600');
+            connectionStatusText.classList.remove('text-red-600', 'text-yellow-600', 'text-green-600');
+            
+            if (!lastConnectionStatus.online) {
+                // Offline
+                connectionStatusContainer.classList.add('bg-red-100');
+                connectionIndicator.classList.add('bg-red-600');
+                connectionStatusText.textContent = 'Offline';
+                connectionStatusText.classList.add('text-red-600');
+            } else if (lastConnectionStatus.speed === 'slow') {
+                // Koneksi lambat
+                connectionStatusContainer.classList.add('bg-yellow-100');
+                connectionIndicator.classList.add('bg-yellow-500');
+                connectionStatusText.textContent = 'Koneksi Lambat';
+                connectionStatusText.classList.add('text-yellow-600');
+            } else {
+                // Koneksi baik
+                connectionStatusContainer.classList.add('bg-green-100');
+                connectionIndicator.classList.add('bg-green-600');
+                connectionStatusText.textContent = 'Koneksi Baik';
+                connectionStatusText.classList.add('text-green-600');
+            }
+        }
+        
+        // Fungsi untuk mengukur kecepatan koneksi
+        function checkConnectionSpeed() {
+            const startTime = Date.now();
+            const url = '{{ route("connection.test") }}?' + startTime; // tambahkan parameter untuk menghindari cache
+            
+            return fetch(url, { method: 'HEAD' })
+                .then(response => {
+                    const endTime = Date.now();
+                    const latency = endTime - startTime;
+                    
+                    lastConnectionStatus.latency = latency;
+                    lastConnectionStatus.online = true;
+                    
+                    // Tentukan kualitas koneksi berdasarkan latency
+                    if (latency > 500) { // lebih dari 500ms dianggap lambat
+                        lastConnectionStatus.speed = 'slow';
+                    } else {
+                        lastConnectionStatus.speed = 'good';
+                    }
+                    
+                    updateConnectionUI();
+                    return lastConnectionStatus;
+                })
+                .catch(error => {
+                    console.error('Gagal mengecek koneksi:', error);
+                    lastConnectionStatus.online = navigator.onLine;
+                    lastConnectionStatus.speed = 'unknown';
+                    updateConnectionUI();
+                    return lastConnectionStatus;
+                });
+        }
+        
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification(message, type) {
+            uploadNotification.textContent = message;
+            uploadNotification.classList.remove('bg-red-600', 'bg-yellow-500', 'bg-green-600');
+            
+            if (type === 'error') {
+                uploadNotification.classList.add('bg-red-600');
+            } else if (type === 'warning') {
+                uploadNotification.classList.add('bg-yellow-500');
+            } else {
+                uploadNotification.classList.add('bg-green-600');
+            }
+            
+            uploadNotification.classList.add('translate-y-0');
+            
+            setTimeout(() => {
+                uploadNotification.classList.remove('translate-y-0');
+            }, 5000);
+        }
+        
+        // Jalankan pengecekan awal
+        checkConnectionSpeed();
+        
+        // Update status saat event online/offline
+        window.addEventListener('online', () => {
+            lastConnectionStatus.online = true;
+            checkConnectionSpeed();
+            showNotification('Koneksi internet telah tersambung kembali', 'success');
+        });
+        
+        window.addEventListener('offline', () => {
+            lastConnectionStatus.online = false;
+            updateConnectionUI();
+            showNotification('Koneksi internet terputus', 'error');
+        });
+        
+        // Tambahkan event listener untuk file input (gambar)
+        const fileInput = document.getElementById('gambar');
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                // Cek ukuran file
+                const fileSize = this.files[0].size / 1024 / 1024; // convert to MB
+                
+                // Jika file lebih dari 1 MB, periksa kecepatan koneksi
+                if (fileSize > 1) {
+                    checkConnectionSpeed().then(status => {
+                        if (status.speed === 'slow') {
+                            showNotification(`Perhatian: Koneksi internet lambat (${status.latency}ms). Upload mungkin membutuhkan waktu lebih lama.`, 'warning');
+                        }
+                    });
+                }
+            }
+        });
+        
+        // Tambahkan event listener untuk form submission
+        uploadForm.addEventListener('submit', function(e) {
+            // Cek apakah ada file yang dipilih
+            const fileInput = document.getElementById('gambar');
+            let hasFile = fileInput.files && fileInput.files.length > 0;
+            
+            if (hasFile) {
+                e.preventDefault(); // Tahan pengiriman form
+                
+                // Periksa koneksi terlebih dahulu
+                checkConnectionSpeed().then(status => {
+                    if (!status.online) {
+                        showNotification('Tidak dapat mengirim form: Koneksi internet terputus', 'error');
+                        return;
+                    }
+                    
+                    if (status.speed === 'slow') {
+                        // Tampilkan konfirmasi jika koneksi lambat
+                        if (confirm(`Koneksi internet Anda lambat (${status.latency}ms). Upload mungkin membutuhkan waktu lebih lama atau gagal. Lanjutkan?`)) {
+                            // Ubah tampilan tombol submit
+                            const originalText = submitButton.innerHTML;
+                            submitButton.innerHTML = '<span class="inline-block animate-spin mr-2">↻</span> Mengunggah...';
+                            submitButton.disabled = true;
+                            
+                            // Timer untuk timeout
+                            const uploadTimeout = setTimeout(() => {
+                                submitButton.innerHTML = originalText;
+                                submitButton.disabled = false;
+                                showNotification('Upload gagal: Waktu habis', 'error');
+                            }, 60000); // 60 detik timeout
+                            
+                            // Gunakan Fetch API untuk upload dengan progress
+                            const formData = new FormData(uploadForm);
+                            
+                            fetch(uploadForm.action, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            })
+                            .then(response => {
+                                clearTimeout(uploadTimeout);
+                                
+                                if (response.ok) {
+                                    return response.json();
+                                } else {
+                                    throw new Error('Server error');
+                                }
+                            })
+                            .then(data => {
+                                submitButton.innerHTML = '✓ Berhasil';
+                                showNotification(data.message || 'Data berhasil disimpan', 'success');
+                                
+                                setTimeout(() => {
+                                    window.location.href = data.redirect || "{{ route('cagar-budaya.index') }}";
+                                }, 1000);
+                            })
+                            .catch(error => {
+                                clearTimeout(uploadTimeout);
+                                submitButton.innerHTML = originalText;
+                                submitButton.disabled = false;
+                                showNotification('Upload gagal: ' + error.message, 'error');
+                            });
+                        }
+                    } else {
+                        // Jika koneksi baik, submit form seperti biasa
+                        uploadForm.submit();
+                    }
+                });
+            } else {
+                // Jika tidak ada file, periksa koneksi dasar saja
+                if (!navigator.onLine) {
+                    e.preventDefault();
+                    showNotification('Tidak dapat mengirim form: Koneksi internet terputus', 'error');
+                }
+            }
+        });
+        
+        // Periksa koneksi secara berkala (setiap 30 detik)
+        setInterval(checkConnectionSpeed, 30000);
     });
 </script>
+
+<style>
+/* Animasi untuk indikator */
+#connection-indicator {
+    transition: background-color 0.3s ease;
+}
+
+/* Animasi untuk spinner upload */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Transisi untuk notifikasi */
+#upload-notification {
+    transition: transform 0.3s ease;
+}
+
+/* Responsiveness untuk container status koneksi */
+@media (max-width: 640px) {
+    #connection-status-container {
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        border-radius: 0;
+    }
+}
+</style>
 @endpush

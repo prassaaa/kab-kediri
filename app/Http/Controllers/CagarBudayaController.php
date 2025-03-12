@@ -66,52 +66,63 @@ class CagarBudayaController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'objek_cagar_budaya' => 'required|string|max:255',
-            'predikat' => 'required|in:Cagar Budaya,Objek diduga cagar budaya',
-            'kategori' => 'required|in:Benda,Bangunan,Struktur,Situs,Kawasan',
-            'no_reg_bpk_lama' => 'nullable|string|max:255',
-            'no_reg_bpk_baru' => 'nullable|string|max:255',
-            'no_reg_disparbud_nomor_urut' => 'nullable|string|max:255',
-            'no_reg_disparbud_kode_kecamatan' => 'nullable|string|max:255',
-            'no_reg_disparbud_kode_kabupaten' => 'nullable|string|max:255',
-            'no_reg_disparbud_tahun' => 'nullable|string|max:255',
-            'lokasi_jalan_dukuhan' => 'nullable|string|max:255',
-            'lokasi_dusun' => 'nullable|string|max:255',
-            'lokasi_desa' => 'required|string|max:255',
-            'lokasi_kecamatan' => 'required|string|max:255',
-            'bahan' => 'nullable|string|max:255',
-            'longitude' => 'nullable|numeric',
-            'latitude' => 'nullable|numeric',
-            'deskripsi_singkat' => 'required|string',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'kondisi_saat_ini' => 'nullable|string',
-        ]);
-        
-        // Handle file upload jika ada
-        if ($request->hasFile('gambar')) {
-            $gambarPath = $request->file('gambar')->store('cagar-budaya', 'public');
-            $validated['gambar'] = $gambarPath;
-        }
-        
-        // Set created_by to current user
-        $validated['created_by'] = Auth::id();
-        
-        // Set is_verified true jika superadmin
-        if (Auth::user()->role === 'superadmin') {
-            $validated['is_verified'] = true;
-            $validated['verified_by'] = Auth::id();
-            $validated['verified_at'] = now();
-        } else {
-            $validated['is_verified'] = false;
-        }
-        
-        CagarBudaya::create($validated);
-        
-        return redirect()->route('cagar-budaya.index')
-            ->with('success', 'Data cagar budaya berhasil ditambahkan.');
+{
+    $validated = $request->validate([
+        'objek_cagar_budaya' => 'required|string|max:255',
+        'predikat' => 'required|in:Cagar Budaya,Objek diduga cagar budaya',
+        'kategori' => 'required|in:Benda,Bangunan,Struktur,Situs,Kawasan',
+        'no_reg_bpk_lama' => 'nullable|string|max:255',
+        'no_reg_bpk_baru' => 'nullable|string|max:255',
+        'no_reg_disparbud_nomor_urut' => 'nullable|string|max:255',
+        'no_reg_disparbud_kode_kecamatan' => 'nullable|string|max:255',
+        'no_reg_disparbud_kode_kabupaten' => 'nullable|string|max:255',
+        'no_reg_disparbud_tahun' => 'nullable|string|max:255',
+        'lokasi_jalan_dukuhan' => 'nullable|string|max:255',
+        'lokasi_dusun' => 'nullable|string|max:255',
+        'lokasi_desa' => 'required|string|max:255',
+        'lokasi_kecamatan' => 'required|string|max:255',
+        'bahan' => 'nullable|string|max:255',
+        'longitude' => 'nullable|numeric',
+        'latitude' => 'nullable|numeric',
+        'deskripsi_singkat' => 'required|string',
+        'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'kondisi_saat_ini' => 'nullable|string',
+    ]);
+    
+    // Handle file upload jika ada
+    if ($request->hasFile('gambar')) {
+        $gambarPath = $request->file('gambar')->store('cagar-budaya', 'public');
+        $validated['gambar'] = $gambarPath;
     }
+    
+    // Set created_by to current user
+    $validated['created_by'] = Auth::id();
+    
+    // Set is_verified true jika superadmin
+    if (Auth::user()->role === 'superadmin') {
+        $validated['is_verified'] = true;
+        $validated['verified_by'] = Auth::id();
+        $validated['verified_at'] = now();
+    } else {
+        $validated['is_verified'] = false;
+    }
+    
+    // Simpan data
+    $cagarBudaya = CagarBudaya::create($validated);
+    
+    // Jika request AJAX, berikan response JSON
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Data cagar budaya berhasil ditambahkan.',
+            'redirect' => route('cagar-budaya.index')
+        ]);
+    }
+    
+    // Jika bukan AJAX, redirect dengan flash message
+    return redirect()->route('cagar-budaya.index')
+        ->with('success', 'Data cagar budaya berhasil ditambahkan.');
+}
 
     /**
      * Display the specified resource.

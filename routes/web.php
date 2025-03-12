@@ -70,6 +70,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/cagar-budaya/{cagarBudaya}/request-revision', [CagarBudayaController::class, 'requestRevision'])
             ->name('cagar-budaya.request-revision');
     });
+
+    // Route untuk test koneksi
+    Route::get('/connection-test', function() {
+        return response()->json(['status' => 'ok', 'time' => now()->toIso8601String()]);
+    })->name('connection.test');
 });
 
 require __DIR__.'/auth.php';
