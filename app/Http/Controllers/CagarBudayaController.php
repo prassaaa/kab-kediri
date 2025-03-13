@@ -9,6 +9,8 @@ use Barryvdh\DomPDF\Facade\PDF;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Rap2hpoutre\FastExcel\FastExcel;
 
 class CagarBudayaController extends Controller
 {
@@ -387,4 +389,132 @@ public function submitRevision(Request $request, CagarBudaya $cagarBudaya)
     return redirect()->route('cagar-budaya.show', $cagarBudaya)
         ->with('success', 'Revisi data cagar budaya berhasil disubmit.');
 }
+
+    public function importForm()
+    {
+        return view('cagar-budaya.import');
+    }
+
+    public function import(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'file' => 'required|file|mimes:csv,xls,xlsx|max:5120',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+    try {
+        $file = $request->file('file');
+        $path = $file->store('temp');
+        
+        $count = 0;
+        $errors = [];
+        
+        (new FastExcel)->import(storage_path('app/' . $path), function ($row) use (&$count, &$errors) {
+            $count++;
+            
+            if (empty($row['objek_cagar_budaya']) || empty($row['predikat']) || empty($row['kategori'])) {
+                $errors[] = "Baris $count: Data objek_cagar_budaya, predikat, dan kategori wajib diisi.";
+                return null;
+            }
+            
+            try {
+                return CagarBudaya::create([
+                    'objek_cagar_budaya' => $row['objek_cagar_budaya'],
+                    'predikat' => $row['predikat'],
+                    'kategori' => $row['kategori'],
+                    'bahan' => $row['bahan'] ?? null,
+                    'lokasi_jalan_dukuhan' => $row['lokasi_jalan_dukuhan'] ?? null,
+                    'lokasi_dusun' => $row['lokasi_dusun'] ?? null,
+                    'lokasi_desa' => $row['lokasi_desa'] ?? null,
+                    'lokasi_kecamatan' => $row['lokasi_kecamatan'] ?? null,
+                    'latitude' => $row['latitude'] ?? null,
+                    'longitude' => $row['longitude'] ?? null,
+                    'no_reg_bpk_lama' => $row['no_reg_bpk_lama'] ?? null,
+                    'no_reg_bpk_baru' => $row['no_reg_bpk_baru'] ?? null,
+                    'no_reg_disparbud_nomor_urut' => $row['no_reg_disparbud_nomor_urut'] ?? null,
+                    'no_reg_disparbud_kode_kecamatan' => $row['no_reg_disparbud_kode_kecamatan'] ?? null,
+                    'no_reg_disparbud_kode_kabupaten' => $row['no_reg_disparbud_kode_kabupaten'] ?? null,
+                    'no_reg_disparbud_tahun' => $row['no_reg_disparbud_tahun'] ?? null,
+                    'deskripsi_singkat' => $row['deskripsi_singkat'] ?? null,
+                    'kondisi_saat_ini' => $row['kondisi_saat_ini'] ?? null,
+                    'created_by' => Auth::id(),
+                    'is_verified' => Auth::user()->role === 'superadmin',
+                ]);
+            } catch (\Exception $e) {
+                $errors[] = "Baris $count: " . $e->getMessage();
+                return null;
+            }
+        });
+        
+        // Hapus file temporary
+        Storage::delete($path);
+        
+        if (count($errors) > 0) {
+            return response()->json([
+                'success' => false,
+                'errors' => $errors,
+            ], 422);
+        }
+        
+        // Response untuk AJAX
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Data cagar budaya berhasil diimpor ($count data).",
+                'redirect' => route('cagar-budaya.index')
+            ]);
+        }
+        
+        // Response untuk non-AJAX
+        return redirect()->route('cagar-budaya.index')
+            ->with('success', "Data cagar budaya berhasil diimpor ($count data).");
+    } catch (\Exception $e) {
+        Log::error('Error importing cagar budaya: ' . $e->getMessage());
+        
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
+        }
+        
+        return redirect()->route('cagar-budaya.index')
+            ->with('error', 'Terjadi kesalahan saat mengimpor data: ' . $e->getMessage());
+    }
+}
+
+    public function downloadTemplate()
+    {
+        $template = collect([
+            [
+                'objek_cagar_budaya' => 'Candi Borobudur',
+                'predikat' => 'Cagar Budaya',
+                'kategori' => 'Bangunan',
+                'bahan' => 'Batu Andesit',
+                'lokasi_jalan_dukuhan' => 'Jalan Candi',
+                'lokasi_dusun' => 'Dusun Borobudur',
+                'lokasi_desa' => 'Desa Borobudur',
+                'lokasi_kecamatan' => 'Kecamatan Borobudur',
+                'latitude' => '-7.6079',
+                'longitude' => '110.2038',
+                'no_reg_bpk_lama' => 'BPK-123',
+                'no_reg_bpk_baru' => 'BPK-456',
+                'no_reg_disparbud_nomor_urut' => '001',
+                'no_reg_disparbud_kode_kecamatan' => 'KEC01',
+                'no_reg_disparbud_kode_kabupaten' => 'KAB01',
+                'no_reg_disparbud_tahun' => '2023',
+                'deskripsi_singkat' => 'Candi Buddha terbesar di dunia',
+                'kondisi_saat_ini' => 'Terawat dengan baik'
+            ]
+        ]);
+        
+        // Export langsung sebagai download
+        return (new FastExcel($template))->download('template-cagar-budaya.xlsx');
+    }
 }
