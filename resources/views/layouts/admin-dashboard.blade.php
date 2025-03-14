@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }} - Sistem Cagar Budaya</title>
+    <title>{{ config('app.name', 'Laravel') }} - Sistem Warisan Budaya</title>
     <link rel="icon" href="{{ asset('assets/img/kediri1.png') }}" type="image/png">
 
     <!-- Fonts -->
@@ -63,6 +63,18 @@
                 margin-left: 16rem; /* Sesuai dengan w-64 (256px) */
             }
         }
+        /* Styling untuk dropdown menu */
+        .dropdown-menu {
+            height: 0;
+            overflow: hidden;
+            transition: height 0.3s ease;
+        }
+        .dropdown-menu.open {
+            height: auto;
+        }
+        .dropdown-item {
+            padding-left: 2.5rem;
+        }
     </style>
 </head>
 <body class="font-sans antialiased">
@@ -88,27 +100,52 @@
                     <span class="mx-2 sm:mx-3 text-sm sm:text-base">Dashboard</span>
                 </a>
                 
-                <a href="{{ route('cagar-budaya.index') }}" class="flex items-center px-4 sm:px-6 py-2 mt-2 sm:mt-4 {{ request()->routeIs('cagar-budaya.*') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
-                    <svg class="w-5 sm:w-6 h-5 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                    </svg>
-                    <span class="mx-2 sm:mx-3 text-sm sm:text-base">Data Cagar Budaya</span>
-                </a>
+                <!-- Cagar Budaya Dropdown Menu -->
+                <div class="mt-2 sm:mt-4">
+                    <button id="cagarBudayaDropdown" class="flex items-center justify-between w-full px-4 sm:px-6 py-2 text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none {{ request()->routeIs('cagar-budaya.*') ? 'text-white bg-gray-700' : '' }}">
+                        <div class="flex items-center">
+                            <svg class="w-5 sm:w-6 h-5 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <span class="mx-2 sm:mx-3 text-sm sm:text-base">Cagar Budaya</span>
+                        </div>
+                        <svg id="cagarBudayaArrow" class="w-4 h-4 transform {{ request()->routeIs('cagar-budaya.*') ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="cagarBudayaMenu" class="dropdown-menu {{ request()->routeIs('cagar-budaya.*') ? 'open' : '' }}">
+                        <a href="{{ route('cagar-budaya.index') }}" class="flex items-center py-2 dropdown-item {{ request()->routeIs('cagar-budaya.index') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+                            <span class="text-sm sm:text-base">Data</span>
+                        </a>
+                        <a href="{{ route('cagar-budaya.lokasi') }}" class="flex items-center py-2 dropdown-item {{ request()->routeIs('cagar-budaya.lokasi') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+                            <span class="text-sm sm:text-base">Lokasi</span>
+                        </a>
+                    </div>
+                </div>
                 
                 @if (Auth::user()->role == 'superadmin')
-                    <a href="{{ route('admin.index') }}" class="flex items-center px-4 sm:px-6 py-2 mt-2 sm:mt-4 {{ request()->routeIs('admin.*') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
-                        <svg class="w-5 sm:w-6 h-5 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                        <span class="mx-2 sm:mx-3 text-sm sm:text-base">Admin</span>
-                    </a>
-                    
-                    <a href="{{ route('user.index') }}" class="flex items-center px-4 sm:px-6 py-2 mt-2 sm:mt-4 {{ request()->routeIs('user.*') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
-                        <svg class="w-5 sm:w-6 h-5 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                        <span class="mx-2 sm:mx-3 text-sm sm:text-base">User</span>
-                    </a>
+                    <!-- Data Akun Dropdown Menu (combined Admin and User) -->
+                    <div class="mt-2 sm:mt-4">
+                        <button id="dataAkunDropdown" class="flex items-center justify-between w-full px-4 sm:px-6 py-2 text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none {{ request()->routeIs('admin.*') || request()->routeIs('user.*') ? 'text-white bg-gray-700' : '' }}">
+                            <div class="flex items-center">
+                                <svg class="w-5 sm:w-6 h-5 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                </svg>
+                                <span class="mx-2 sm:mx-3 text-sm sm:text-base">Data Akun</span>
+                            </div>
+                            <svg id="dataAkunArrow" class="w-4 h-4 transform {{ request()->routeIs('admin.*') || request()->routeIs('user.*') ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="dataAkunMenu" class="dropdown-menu {{ request()->routeIs('admin.*') || request()->routeIs('user.*') ? 'open' : '' }}">
+                            <a href="{{ route('admin.index') }}" class="flex items-center py-2 dropdown-item {{ request()->routeIs('admin.*') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+                                <span class="text-sm sm:text-base">Admin</span>
+                            </a>
+                            <a href="{{ route('user.index') }}" class="flex items-center py-2 dropdown-item {{ request()->routeIs('user.*') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+                                <span class="text-sm sm:text-base">User</span>
+                            </a>
+                        </div>
+                    </div>
                 @endif
                 
                 @if (Auth::user()->role != 'user')
@@ -198,7 +235,7 @@
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebarClose = document.getElementById('sidebarClose');
             const overlay = document.getElementById('overlay');
-
+            
             // Toggle sidebar dan overlay
             sidebarToggle.addEventListener('click', function () {
                 sidebar.classList.toggle('open');
@@ -216,6 +253,30 @@
                 sidebar.classList.remove('open');
                 overlay.classList.remove('active');
             });
+            
+            // Data Akun dropdown functionality
+            const dataAkunDropdown = document.getElementById('dataAkunDropdown');
+            const dataAkunMenu = document.getElementById('dataAkunMenu');
+            const dataAkunArrow = document.getElementById('dataAkunArrow');
+            
+            if (dataAkunDropdown) {
+                dataAkunDropdown.addEventListener('click', function() {
+                    dataAkunMenu.classList.toggle('open');
+                    dataAkunArrow.classList.toggle('rotate-180');
+                });
+            }
+            
+            // Cagar Budaya dropdown functionality
+            const cagarBudayaDropdown = document.getElementById('cagarBudayaDropdown');
+            const cagarBudayaMenu = document.getElementById('cagarBudayaMenu');
+            const cagarBudayaArrow = document.getElementById('cagarBudayaArrow');
+            
+            if (cagarBudayaDropdown) {
+                cagarBudayaDropdown.addEventListener('click', function() {
+                    cagarBudayaMenu.classList.toggle('open');
+                    cagarBudayaArrow.classList.toggle('rotate-180');
+                });
+            }
         });
     </script>
     

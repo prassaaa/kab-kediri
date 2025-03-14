@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CagarBudaya;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\PDF;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -517,4 +517,9 @@ public function submitRevision(Request $request, CagarBudaya $cagarBudaya)
         // Export langsung sebagai download
         return (new FastExcel($template))->download('template-cagar-budaya.xlsx');
     }
+    
+    public function lokasi()
+{
+    return view('cagar-budaya.lokasi');
+}
 }

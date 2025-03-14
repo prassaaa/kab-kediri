@@ -22,6 +22,7 @@ Route::get('/', function () {
 
 // Route yang membutuhkan autentikasi
 Route::middleware('auth')->group(function () {
+    Route::get('/cagar-budaya/lokasi', [CagarBudayaController::class, 'lokasi'])->name('cagar-budaya.lokasi');
     Route::get('/cagar-budaya/import', [CagarBudayaController::class, 'importForm'])->name('cagar-budaya.import-form');
     Route::post('/cagar-budaya/import', [CagarBudayaController::class, 'import'])->name('cagar-budaya.import');
     Route::get('/cagar-budaya/template-download', [CagarBudayaController::class, 'downloadTemplate'])->name('cagar-budaya.template-download');
