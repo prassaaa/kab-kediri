@@ -205,22 +205,32 @@ class CagarBudayaController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(CagarBudaya $cagarBudaya)
-    {
-        // Hanya superadmin yang bisa menghapus
-        if (Auth::user()->role !== 'superadmin') {
-            abort(403, 'Tidak memiliki izin untuk menghapus data.');
-        }
-        
-        // Hapus gambar jika ada
-        if ($cagarBudaya->gambar) {
-            Storage::disk('public')->delete($cagarBudaya->gambar);
-        }
-        
-        $cagarBudaya->delete();
-        
-        return redirect()->route('cagar-budaya.index')
-            ->with('success', 'Data cagar budaya berhasil dihapus.');
+{
+    // Hanya superadmin yang bisa menghapus
+    if (Auth::user()->role !== 'superadmin') {
+        abort(403, 'Tidak memiliki izin untuk menghapus data.');
     }
+    
+    // Hapus gambar jika ada
+    if ($cagarBudaya->gambar) {
+        Storage::disk('public')->delete($cagarBudaya->gambar);
+    }
+    
+    $cagarBudaya->delete();
+    
+    // Jika request AJAX, berikan response JSON
+    if (request()->ajax() || request()->wantsJson()) {
+        return response()->json([
+            'success' => true,
+            'message' => 'Data cagar budaya berhasil dihapus.',
+            'redirect' => route('cagar-budaya.index')
+        ]);
+    }
+    
+    // Jika bukan AJAX, redirect dengan flash message
+    return redirect()->route('cagar-budaya.index')
+        ->with('success', 'Data cagar budaya berhasil dihapus.');
+}
     
     /**
      * Verify a cagar budaya data.
@@ -462,6 +472,9 @@ public function submitRevision(Request $request, CagarBudaya $cagarBudaya)
             ], 422);
         }
         
+        // Simpan pesan sukses ke session terlebih dahulu
+        session()->flash('success', "Data cagar budaya berhasil diimpor ($count data).");
+        
         // Response untuk AJAX
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -472,8 +485,7 @@ public function submitRevision(Request $request, CagarBudaya $cagarBudaya)
         }
         
         // Response untuk non-AJAX
-        return redirect()->route('cagar-budaya.index')
-            ->with('success', "Data cagar budaya berhasil diimpor ($count data).");
+        return redirect()->route('cagar-budaya.index');
     } catch (\Exception $e) {
         Log::error('Error importing cagar budaya: ' . $e->getMessage());
         

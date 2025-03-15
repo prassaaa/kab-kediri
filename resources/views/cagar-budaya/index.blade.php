@@ -3,18 +3,6 @@
 @section('page-title', 'Data Cagar Budaya')
 
 @section('content')
-<!-- Notifikasi -->
-@if(session('success'))
-    <div class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
-        <span class="font-medium">Sukses!</span> {{ session('success') }}
-    </div>
-@endif
-
-@if(session('error'))
-    <div class="bg-red-100 border border-red-200 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
-        <span class="font-medium">Error!</span> {{ session('error') }}
-    </div>
-@endif
 <div class="bg-white overflow-hidden shadow-sm rounded-lg">
     <div class="p-4 sm:p-6">
         <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
