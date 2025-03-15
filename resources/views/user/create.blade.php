@@ -69,6 +69,24 @@
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm sm:text-base" 
                                    required>
                         </div>
+
+                        <div class="mb-4">
+                            <label for="duration_days" class="block text-sm font-medium text-gray-700">Durasi Akun (Hari)</label>
+                            <select id="duration_days" name="duration_days" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <option value="">Tidak Terbatas</option>
+                                <option value="1">1 Hari</option>
+                                <option value="2">2 Hari</option>
+                                <option value="3">3 Hari</option>
+                                <option value="7">7 Hari</option>
+                                <option value="14">14 Hari</option>
+                                <option value="30">30 Hari</option>
+                                <option value="90">90 Hari</option>
+                                <option value="365">1 Tahun</option>
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Biarkan kosong untuk akun tanpa batas waktu
+                            </p>
+                        </div>
                     </div>
                 </div>
                 

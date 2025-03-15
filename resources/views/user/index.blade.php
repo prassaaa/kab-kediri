@@ -31,6 +31,9 @@
                                 Terdaftar Pada
                             </th>
                             <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                Durasi Akun
+                            </th>
+                            <th class="px-6 py-3 border-b-2 border-gray-300 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                 Aksi
                             </th>
                         </tr>
@@ -46,6 +49,25 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap border-b border-gray-300">
                                     {{ $user->created_at->format('d/m/Y H:i') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap border-b border-gray-300">
+                                    @if(is_null($user->duration_days))
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Permanen
+                                        </span>
+                                    @elseif(!$user->duration_started_at)
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            {{ $user->duration_days }} Hari (Belum Aktif)
+                                        </span>
+                                    @elseif(now()->lt($user->duration_ends_at))
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Aktif sampai {{ $user->duration_ends_at->format('d/m/Y') }}
+                                        </span>
+                                    @else
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            Kedaluwarsa
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap border-b border-gray-300 text-sm">
                                     <div class="flex space-x-2">
@@ -68,7 +90,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-4 whitespace-nowrap border-b border-gray-300 text-center">
+                                <td colspan="5" class="px-6 py-4 whitespace-nowrap border-b border-gray-300 text-center">
                                     Tidak ada data user.
                                 </td>
                             </tr>
@@ -93,6 +115,28 @@
                             <div>
                                 <span class="text-xs text-gray-600 uppercase">Terdaftar Pada</span>
                                 <p class="text-sm">{{ $user->created_at->format('d/m/Y H:i') }}</p>
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-600 uppercase">Durasi Akun</span>
+                                <p class="text-sm">
+                                    @if(is_null($user->duration_days))
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Permanen
+                                        </span>
+                                    @elseif(!$user->duration_started_at)
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            {{ $user->duration_days }} Hari (Belum Aktif)
+                                        </span>
+                                    @elseif(now()->lt($user->duration_ends_at))
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Aktif sampai {{ $user->duration_ends_at->format('d/m/Y') }}
+                                        </span>
+                                    @else
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            Kedaluwarsa
+                                        </span>
+                                    @endif
+                                </p>
                             </div>
                             <div>
                                 <span class="text-xs text-gray-600 uppercase">Aksi</span>

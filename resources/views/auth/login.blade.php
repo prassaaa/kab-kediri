@@ -10,6 +10,8 @@
     <link rel="icon" href="{{ asset('assets/img/kediri1.png') }}" type="image/png">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <!-- Tambahkan SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -205,5 +207,23 @@
                 })
         })()
     </script>
+    
+    <!-- Tambahkan SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.all.min.js"></script>
+    
+    <!-- Script untuk menampilkan SweetAlert jika ada pesan error -->
+    @if(session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Akun Kadaluarsa',
+                text: "{{ session('error') }}",
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
+            });
+        });
+    </script>
+    @endif
 </body>
 </html>

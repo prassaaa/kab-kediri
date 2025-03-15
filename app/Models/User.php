@@ -22,6 +22,10 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'duration_days',
+        'duration_started_at',
+        'duration_ends_at',
+        'is_active',
     ];
 
     /**
@@ -42,5 +46,16 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'duration_started_at' => 'datetime',
+        'duration_ends_at' => 'datetime',
     ];
+
+    public function isAccountActive()
+    {
+        if (is_null($this->duration_ends_at)) {
+            return true;
+        }
+
+        return now()->lt($this->duration_ends_at);
+    }
 }

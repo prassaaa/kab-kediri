@@ -68,6 +68,34 @@
                                    id="password_confirmation" 
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm sm:text-base">
                         </div>
+
+                        <div class="mb-4">
+                            <label for="duration_days" class="block text-sm font-medium text-gray-700">Durasi Akun (Hari)</label>
+                            <select id="duration_days" name="duration_days" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <option value="" {{ is_null($user->duration_days) ? 'selected' : '' }}>Tidak Terbatas</option>
+                                <option value="1" {{ $user->duration_days == 1 ? 'selected' : '' }}>1 Hari</option>
+                                <option value="2" {{ $user->duration_days == 2 ? 'selected' : '' }}>2 Hari</option>
+                                <option value="3" {{ $user->duration_days == 3 ? 'selected' : '' }}>3 Hari</option>
+                                <option value="7" {{ $user->duration_days == 7 ? 'selected' : '' }}>7 Hari</option>
+                                <option value="14" {{ $user->duration_days == 14 ? 'selected' : '' }}>14 Hari</option>
+                                <option value="30" {{ $user->duration_days == 30 ? 'selected' : '' }}>30 Hari</option>
+                                <option value="90" {{ $user->duration_days == 90 ? 'selected' : '' }}>90 Hari</option>
+                                <option value="365" {{ $user->duration_days == 365 ? 'selected' : '' }}>1 Tahun</option>
+                            </select>
+                            
+                            @if($user->duration_started_at)
+                                <p class="mt-1 text-xs text-gray-700">
+                                    Durasi dimulai: {{ $user->duration_started_at->format('d/m/Y H:i') }}
+                                </p>
+                                <p class="mt-1 text-xs text-gray-700">
+                                    Berakhir pada: {{ $user->duration_ends_at->format('d/m/Y H:i') }}
+                                </p>
+                            @else
+                                <p class="mt-1 text-xs text-gray-500">
+                                    Durasi belum dimulai (akan dimulai saat user pertama kali login)
+                                </p>
+                            @endif
+                        </div>
                     </div>
                 </div>
                 
