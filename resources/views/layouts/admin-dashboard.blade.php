@@ -118,7 +118,38 @@
                             <span class="text-sm sm:text-base">Data</span>
                         </a>
                         <a href="{{ route('cagar-budaya.lokasi') }}" class="flex items-center py-2 dropdown-item {{ request()->routeIs('cagar-budaya.lokasi') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
-                            <span class="text-sm sm:text-base">Lokasi</span>
+                            <span class="text-sm sm:text-base">Peta Lokasi</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mt-2 sm:mt-4">
+                    <button id="wbtbDropdown" class="flex items-center justify-between w-full px-4 sm:px-6 py-2 text-gray-300 hover:bg-gray-700 hover:text-white focus:outline-none {{ request()->routeIs('wbtb.*') ? 'text-white bg-gray-700' : '' }}">
+                        <div class="flex items-center">
+                            <svg class="w-5 sm:w-6 h-5 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            <span class="mx-2 sm:mx-3 text-sm sm:text-base">Data WBTB</span>
+                        </div>
+                        <svg id="wbtbArrow" class="w-4 h-4 transform {{ request()->routeIs('wbtb.*') ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="wbtbMenu" class="dropdown-menu {{ request()->routeIs('wbtb.*') ? 'open' : '' }}">
+                        <a href="{{ route('wbtb.opk.index') }}" class="flex items-center py-2 dropdown-item {{ request()->routeIs('wbtb.opk.*') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+                            <span class="text-sm sm:text-base">OPK</span>
+                        </a>
+                        <a href="{{ route('wbtb.sdm.index') }}" class="flex items-center py-2 dropdown-item {{ request()->routeIs('wbtb.sdm.*') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+                            <span class="text-sm sm:text-base">SDM Kebudayaan</span>
+                        </a>
+                        <a href="{{ route('wbtb.lembaga.index') }}" class="flex items-center py-2 dropdown-item {{ request()->routeIs('wbtb.lembaga.*') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+                            <span class="text-sm sm:text-base">Lembaga Kebudayaan</span>
+                        </a>
+                        <a href="{{ route('wbtb.sarpras.index') }}" class="flex items-center py-2 dropdown-item {{ request()->routeIs('wbtb.sarpras.*') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+                            <span class="text-sm sm:text-base">Sarpras</span>
+                        </a>
+                        <a href="{{ route('wbtb.lokasi') }}" class="flex items-center py-2 dropdown-item {{ request()->routeIs('wbtb.peta') ? 'text-white bg-gray-700' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}">
+                            <span class="text-sm sm:text-base">Peta Lokasi</span>
                         </a>
                     </div>
                 </div>
@@ -275,6 +306,18 @@
                 cagarBudayaDropdown.addEventListener('click', function() {
                     cagarBudayaMenu.classList.toggle('open');
                     cagarBudayaArrow.classList.toggle('rotate-180');
+                });
+            }
+
+            // WBTB dropdown functionality
+            const wbtbDropdown = document.getElementById('wbtbDropdown');
+            const wbtbMenu = document.getElementById('wbtbMenu');
+            const wbtbArrow = document.getElementById('wbtbArrow');
+
+            if (wbtbDropdown) {
+                wbtbDropdown.addEventListener('click', function() {
+                    wbtbMenu.classList.toggle('open');
+                    wbtbArrow.classList.toggle('rotate-180');
                 });
             }
         });

@@ -20,6 +20,31 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// WBTB Routes
+Route::prefix('wbtb')->name('wbtb.')->middleware(['auth'])->group(function () {
+    // OPK Routes
+    Route::resource('opk', \App\Http\Controllers\WBTB\OPKController::class);
+    Route::post('opk/{opk}/verify', [\App\Http\Controllers\WBTB\OPKController::class, 'verify'])->name('opk.verify');
+    
+    // SDM Kebudayaan Routes
+    Route::resource('sdm', \App\Http\Controllers\WBTB\SDMController::class);
+    Route::post('sdm/{sdm}/verify', [\App\Http\Controllers\WBTB\SDMController::class, 'verify'])->name('sdm.verify');
+    
+    // Lembaga Kebudayaan Routes
+    Route::resource('lembaga', \App\Http\Controllers\WBTB\LembagaController::class);
+    Route::post('lembaga/{lembaga}/verify', [\App\Http\Controllers\WBTB\LembagaController::class, 'verify'])->name('lembaga.verify');
+    
+    // Sarpras Routes
+    Route::resource('sarpras', \App\Http\Controllers\WBTB\SarprasController::class, [
+        'parameters' => ['sarpras' => 'sarpras']
+    ]);
+    Route::post('sarpras/{sarpras}/verify', [\App\Http\Controllers\WBTB\SarprasController::class, 'verify'])->name('sarpras.verify');
+    
+    // Peta Lokasi Route
+    Route::get('lokasi', [\App\Http\Controllers\WBTB\LokasiWBTBController::class, 'index'])
+    ->name('lokasi');
+});
+
 // Route yang membutuhkan autentikasi
 Route::middleware('auth')->group(function () {
     Route::get('/cagar-budaya/lokasi', [CagarBudayaController::class, 'lokasi'])->name('cagar-budaya.lokasi');
@@ -79,6 +104,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/connection-test', function() {
         return response()->json(['status' => 'ok', 'time' => now()->toIso8601String()]);
     })->name('connection.test');
+});
+
+Route::prefix('api/wbtb')->group(function () {
+    Route::get('lembaga-coordinates', [\App\Http\Controllers\WBTB\LokasiWBTBController::class, 'getLembagaCoordinates']);
+    Route::get('sarpras-coordinates', [\App\Http\Controllers\WBTB\LokasiWBTBController::class, 'getSarprasCoordinates']);
+    Route::get('sdm-coordinates', [\App\Http\Controllers\WBTB\LokasiWBTBController::class, 'getSDMCoordinates']);
+    Route::get('opk-coordinates', [\App\Http\Controllers\WBTB\LokasiWBTBController::class, 'getOPKCoordinates']);
 });
 
 require __DIR__.'/auth.php';
